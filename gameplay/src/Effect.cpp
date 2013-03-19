@@ -361,7 +361,14 @@ Effect* Effect::createFromSource(const char* vshPath, const char* vshSource, con
     GL_ASSERT( glGetProgramiv(program, GL_ACTIVE_ATTRIBUTES, &activeAttributes) );
     if (activeAttributes > 0)
     {
+#ifdef EMSCRIPTEN
+        // Emscripten's GL_ACTIVE_ATTRIBUTE_MAX_LENGTH doesn't seem to work.
+        // Allocate a large enough buffer for most such cases for most cases
+        // (fingers crossed!)
+        length = 1024;
+#else
         GL_ASSERT( glGetProgramiv(program, GL_ACTIVE_ATTRIBUTE_MAX_LENGTH, &length) );
+#endif // EMSCRIPTEN
         if (length > 0)
         {
             GLchar* attribName = new GLchar[length + 1];
@@ -371,8 +378,14 @@ Effect* Effect::createFromSource(const char* vshPath, const char* vshSource, con
             for (int i = 0; i < activeAttributes; ++i)
             {
                 // Query attribute info.
+#ifdef EMSCRIPTEN
+                GLsizei bytesWritten;
+                GL_ASSERT( glGetActiveAttrib(program, i, length, &bytesWritten, &attribSize, &attribType, attribName) );
+                attribName[bytesWritten] = '\0';
+#else
                 GL_ASSERT( glGetActiveAttrib(program, i, length, NULL, &attribSize, &attribType, attribName) );
                 attribName[length] = '\0';
+#endif // EMSCRIPTEN
 
                 // Query the pre-assigned attribute location.
                 GL_ASSERT( attribLocation = glGetAttribLocation(program, attribName) );
@@ -389,7 +402,12 @@ Effect* Effect::createFromSource(const char* vshPath, const char* vshSource, con
     GL_ASSERT( glGetProgramiv(program, GL_ACTIVE_UNIFORMS, &activeUniforms) );
     if (activeUniforms > 0)
     {
+#ifdef EMSCRIPTEN
+        // As above, Uniform max length also doesn't work in Emscripten.
+        length = 1024;
+#else
         GL_ASSERT( glGetProgramiv(program, GL_ACTIVE_UNIFORM_MAX_LENGTH, &length) );
+#endif // EMSCRIPTEN
         if (length > 0)
         {
             GLchar* uniformName = new GLchar[length + 1];
@@ -400,8 +418,14 @@ Effect* Effect::createFromSource(const char* vshPath, const char* vshSource, con
             for (int i = 0; i < activeUniforms; ++i)
             {
                 // Query uniform info.
+#ifdef EMSCRIPTEN
+                GLsizei bytesWritten;
+                GL_ASSERT( glGetActiveUniform(program, i, length, &bytesWritten, &uniformSize, &uniformType, uniformName) );
+                uniformName[bytesWritten] = '\0';  // null terminate
+#else
                 GL_ASSERT( glGetActiveUniform(program, i, length, NULL, &uniformSize, &uniformType, uniformName) );
                 uniformName[length] = '\0';  // null terminate
+#endif // EMSCRIPTEN
                 if (length > 3)
                 {
                     // If this is an array uniform, strip array indexers off it since GL does not
