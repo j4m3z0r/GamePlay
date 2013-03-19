@@ -16,7 +16,7 @@ static std::vector<Font*> __fontCache;
 static Effect* __fontEffect = NULL;
 
 Font::Font() :
-    _style(PLAIN), _size(0), _glyphs(NULL), _glyphCount(0), _texture(NULL), _batch(NULL)
+    _style(PLAIN), _fontSize(0), _glyphs(NULL), _glyphCount(0), _texture(NULL), _batch(NULL)
 {
 }
 
@@ -134,7 +134,7 @@ Font* Font::create(const char* family, Style style, unsigned int size, Glyph* gl
     Font* font = new Font();
     font->_family = family;
     font->_style = style;
-    font->_size = size;
+    font->_fontSize = size;
     font->_texture = texture;
     font->_batch = batch;
 
@@ -148,7 +148,7 @@ Font* Font::create(const char* family, Style style, unsigned int size, Glyph* gl
 
 unsigned int Font::getSize()
 {
-    return _size;
+    return _fontSize;
 }
 
 void Font::start()
@@ -165,9 +165,9 @@ Font::Text* Font::createText(const char* text, const Rectangle& area, const Vect
     GP_ASSERT(_batch);
 
     if (size == 0)
-        size = _size;
-    GP_ASSERT(_size);
-    float scale = (float)size / _size;
+        size = _fontSize;
+    GP_ASSERT(_fontSize);
+    float scale = (float)size / _fontSize;
     int yPos = area.y;
     const float areaHeight = area.height - size;
     std::vector<int> xPositions;
@@ -398,10 +398,10 @@ void Font::drawText(Text* text)
 void Font::drawText(const char* text, int x, int y, const Vector4& color, unsigned int size, bool rightToLeft)
 {
     if (size == 0)
-        size = _size;
-    GP_ASSERT(_size);
+        size = _fontSize;
+    GP_ASSERT(_fontSize);
     GP_ASSERT(text);
-    float scale = (float)size / _size;
+    float scale = (float)size / _fontSize;
     const char* cursor = NULL;
 
     if (rightToLeft)
@@ -525,9 +525,9 @@ void Font::drawText(const char* text, const Rectangle& area, const Vector4& colo
     GP_ASSERT(text);
 
     if (size == 0)
-        size = _size;
-    GP_ASSERT(_size);
-    float scale = (float)size / _size;
+        size = _fontSize;
+    GP_ASSERT(_fontSize);
+    float scale = (float)size / _fontSize;
     int yPos = area.y;
     const float areaHeight = area.height - size;
     std::vector<int> xPositions;
@@ -723,7 +723,7 @@ void Font::finish()
 
 void Font::measureText(const char* text, unsigned int size, unsigned int* width, unsigned int* height)
 {
-    GP_ASSERT(_size);
+    GP_ASSERT(_fontSize);
     GP_ASSERT(text);
     GP_ASSERT(width);
     GP_ASSERT(height);
@@ -736,7 +736,7 @@ void Font::measureText(const char* text, unsigned int size, unsigned int* width,
         return;
     }
 
-    float scale = (float)size / _size;
+    float scale = (float)size / _fontSize;
     const char* token = text;
 
     *width = 0;
@@ -764,7 +764,7 @@ void Font::measureText(const char* text, unsigned int size, unsigned int* width,
 
 void Font::measureText(const char* text, const Rectangle& clip, unsigned int size, Rectangle* out, Justify justify, bool wrap, bool ignoreClip)
 {
-    GP_ASSERT(_size);
+    GP_ASSERT(_fontSize);
     GP_ASSERT(text);
     GP_ASSERT(out);
 
@@ -774,7 +774,7 @@ void Font::measureText(const char* text, const Rectangle& clip, unsigned int siz
         return;
     }
 
-    float scale = (float)size / _size;
+    float scale = (float)size / _fontSize;
     Justify vAlign = static_cast<Justify>(justify & 0xF0);
     if (vAlign == 0)
     {
@@ -1096,11 +1096,11 @@ void Font::measureText(const char* text, const Rectangle& clip, unsigned int siz
 void Font::getMeasurementInfo(const char* text, const Rectangle& area, unsigned int size, Justify justify, bool wrap, bool rightToLeft,
         std::vector<int>* xPositions, int* yPosition, std::vector<unsigned int>* lineLengths)
 {
-    GP_ASSERT(_size);
+    GP_ASSERT(_fontSize);
     GP_ASSERT(text);
     GP_ASSERT(yPosition);
 
-    float scale = (float)size / _size;
+    float scale = (float)size / _fontSize;
 
     Justify vAlign = static_cast<Justify>(justify & 0xF0);
     if (vAlign == 0)
@@ -1292,14 +1292,14 @@ void Font::getLocationAtIndex(const char* text, const Rectangle& clip, unsigned 
 int Font::getIndexOrLocation(const char* text, const Rectangle& area, unsigned int size, const Vector2& inLocation, Vector2* outLocation,
                                       const int destIndex, Justify justify, bool wrap, bool rightToLeft)
 {
-    GP_ASSERT(_size);
+    GP_ASSERT(_fontSize);
     GP_ASSERT(text);
     GP_ASSERT(outLocation);
 
     unsigned int charIndex = 0;
 
     // Essentially need to measure text until we reach inLocation.
-    float scale = (float)size / _size;
+    float scale = (float)size / _fontSize;
     int yPos = area.y;
     const float areaHeight = area.height - size;
     std::vector<int> xPositions;

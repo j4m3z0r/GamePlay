@@ -331,7 +331,7 @@ private:
     std::string _id;
     std::string _family;
     Style _style;
-    unsigned int _size;
+    unsigned int _fontSize;
     Glyph* _glyphs;
     unsigned int _glyphCount;
     Texture* _texture;
