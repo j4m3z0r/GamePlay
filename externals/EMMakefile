@@ -1,8 +1,6 @@
-EMCC_FLAGS:=-s FULL_ES2=1 -g -O1 -D_DEBUG --jcache 
+EMCC_FLAGS:=-s FULL_ES2=1 -g -D_DEBUG --jcache 
 
-EMCC:=/Users/jgregory/src/emscripten-experiments/emscripten/emcc
-
-all: ParticlesGame.html
+EMCC:=emscripten/emcc
 
 LUA_OBJECTS := \
 	lua-5.2.1/src/lapi.bc \
@@ -224,16 +222,17 @@ BULLET_OBJECTS := \
 	bullet-2.81-rev2613/src//MiniCL/MiniCLTask/MiniCLTask.bc \
 	bullet-2.81-rev2613/src//MiniCL/MiniCLTaskScheduler.bc
 
-
-OBJECTS := \
-	$(GP_HACKED_OBJECTS)
+FAKE_AL_OBJECTS := \
+	fakeal/AL/fakeal.c
 
 INTERMEDIATE_OBJECTS := \
 	libbullet.bc \
 	liblua.bc \
 	libz.bc \
 	libpng.bc \
-	libgameplay.bc
+	libfakeal.bc
+
+all: $(INTERMEDIATE_OBJECTS)
 
 libbullet.bc: $(BULLET_OBJECTS)
 	$(EMCC) $(EMCC_FLAGS) $(BULLET_OBJECTS) -o libbullet.bc
@@ -247,38 +246,22 @@ libz.bc: $(ZLIB_OBJECTS)
 libpng.bc: $(LIBPNG_OBJECTS)
 	$(EMCC) $(EMCC_FLAGS) $(LIBPNG_OBJECTS) -o libpng.bc
 
-libgameplay.bc: $(GAMEPLAY_OBJECTS) $(GP_LUA_OBJECTS)
-	$(EMCC) $(EMCC_FLAGS) $(GAMEPLAY_OBJECTS) $(GP_LUA_OBJECTS) -o libgameplay.bc
-
 TO_CLEAN := \
 	$(BULLET_OBJECTS) \
 	$(LUA_OBJECTS) \
 	$(ZLIB_OBJECTS) \
 	$(LIBPNG_OBJECTS)
 
+# XXX: Slightly hacky including all the -I flags for all projects, but doesn't
+# seem to break anything.
 %.bc: %.cpp
-	$(EMCC)  \
-		-Ibuild \
-		-Ilibpng-1.4.8/ \
-		-Ilua-5.2.1/src/ \
-		-Ibullet-2.81-rev2613/src \
-		-I../../../external-deps/oggvorbis/include/ \
-		-I../../../../emscripten/system/include/ \
-		-I../../../gameplay/src \
-		$(EMCC_FLAGS) -o $@ $<
-
-# -D__ANDROID__ \
+	$(EMCC) -Iemscripten/system/include/ -Ilibpng-1.4.8/ -Ilua-5.2.1/src/ -Ibullet-2.81-rev2613/src $(EMCC_FLAGS) -o $@ $<
 
 %.bc: %.c
-	$(EMCC)  \
-		$(EMCC_FLAGS) -o $@ $<
-
-ParticlesGame.html: $(OBJECTS) $(INTERMEDIATE_OBJECTS)
-	cp -avf ../res .
-	$(EMCC) $(EMCC_FLAGS) -o ParticlesGame.html $(INTERMEDIATE_OBJECTS) $(OBJECTS) --preload-file res
+	$(EMCC) $(EMCC_FLAGS) -o $@ $<
 
 clean:
-	rm -f $(OBJECTS) $(INTERMEDIATE_OBJECTS) $(TO_CLEAN)
-	rm -rf res
+	rm -f $(INTERMEDIATE_OBJECTS) $(TO_CLEAN)
 	$(EMCC) --clear-cache
+
 
