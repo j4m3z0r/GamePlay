@@ -1,0 +1,5 @@
+- fakeal contains OpenAL headers and a simple stub file containing dummy
+  implementations for the handful of OpenAL methods that get called.
+- fakeogg contains a single header file that is necessary to get types right
+  for the Ogg Vorbis library (which is included practically everywhere).
+- Other directories are straight copies of the libraries they are named after.
