@@ -166,6 +166,9 @@ extern void print(const char* format, ...);
 #elif __ANDROID__
 #include <AL/al.h>
 #include <AL/alc.h>
+#elif EMSCRIPTEN
+#include <AL/al.h>
+#include <AL/alc.h>
 #elif __linux__
 #include <AL/al.h>
 #include <AL/alc.h>
@@ -188,7 +191,21 @@ using std::va_list;
 #define WINDOW_VSYNC        1
 
 // Graphics (OpenGL)
-#ifdef __QNX__
+#ifdef EMSCRIPTEN
+    // Treat Emscripten basically like Android. We want OpenGL ES and a main
+    // method; this comes pretty close.
+    #include <EGL/egl.h>
+    #include <GLES2/gl2.h>
+    #include <GLES2/gl2ext.h>
+    extern PFNGLBINDVERTEXARRAYOESPROC glBindVertexArray;
+    extern PFNGLDELETEVERTEXARRAYSOESPROC glDeleteVertexArrays;
+    extern PFNGLGENVERTEXARRAYSOESPROC glGenVertexArrays;
+    extern PFNGLISVERTEXARRAYOESPROC glIsVertexArray;
+    #define OPENGL_ES
+    #define glClearDepth glClearDepthf
+    #define GL_DEPTH24_STENCIL8 GL_DEPTH24_STENCIL8_OES
+    //#define USE_VAO
+#elif __QNX__
     #include <EGL/egl.h>
     #include <GLES2/gl2.h>
     #include <GLES2/gl2ext.h>
