@@ -1,3 +1,6 @@
+// Note, this class is just stubbed out for Emscripten as it does not yet
+// provide an OpenAL implementation.
+
 #include "Base.h"
 #include "AudioController.h"
 #include "AudioListener.h"
@@ -18,6 +21,7 @@ AudioController::~AudioController()
 
 void AudioController::initialize()
 {
+#ifndef EMSCRIPTEN
     _alcDevice = alcOpenDevice(NULL);
     if (!_alcDevice)
     {
@@ -40,10 +44,12 @@ void AudioController::initialize()
     {
         GP_ERROR("Unable to make OpenAL context current. Error: %d\n", alcErr);
     }
+#endif // EMSCRIPTEN
 }
 
 void AudioController::finalize()
 {
+#ifndef EMSCRIPTEN
     alcMakeContextCurrent(NULL);
     if (_alcContext)
     {
@@ -55,10 +61,12 @@ void AudioController::finalize()
         alcCloseDevice(_alcDevice);
         _alcDevice = NULL;
     }
+#endif // EMSCRIPTEN
 }
 
 void AudioController::pause()
 {
+#ifndef EMSCRIPTEN
     std::set<AudioSource*>::iterator itr = _playingSources.begin();
 
     // For each source that is playing, pause it.
@@ -72,10 +80,12 @@ void AudioController::pause()
         _pausingSource = NULL;
         itr++;
     }
+#endif // EMSCRIPTEN
 }
 
 void AudioController::resume()
 {   
+#ifndef EMSCRIPTEN
     alcMakeContextCurrent(_alcContext);
 
     std::set<AudioSource*>::iterator itr = _playingSources.begin();
@@ -89,10 +99,12 @@ void AudioController::resume()
         source->resume();
         itr++;
     }
+#endif // EMSCRIPTEN
 }
 
 void AudioController::update(float elapsedTime)
 {
+#ifndef EMSCRIPTEN
     AudioListener* listener = AudioListener::getInstance();
     if (listener)
     {
@@ -101,6 +113,7 @@ void AudioController::update(float elapsedTime)
         AL_CHECK( alListenerfv(AL_VELOCITY, (ALfloat*)&listener->getVelocity()) );
         AL_CHECK( alListenerfv(AL_POSITION, (ALfloat*)&listener->getPosition()) );
     }
+#endif // EMSCRIPTEN
 }
 
 }
