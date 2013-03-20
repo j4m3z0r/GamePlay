@@ -1,586 +1,67 @@
 EMCC_FLAGS:=-s FULL_ES2=1 -g -O1 -D_DEBUG --jcache 
 
-EMCC:=/Users/jgregory/src/emscripten-experiments/emscripten/emcc
+EMCC:=externals/emscripten/emcc
 
-all: ParticlesGame.html
+SAMPLES := \
+	gameplay-samples/sample04-particles/dist/index.html
 
-#-D__APPLE__ -DTARGET_OS_MAC
-
-GAMEPLAY_OBJECTS := \
-	../../../gameplay/src/AIAgent.bc \
-	../../../gameplay/src/AIController.bc \
-	../../../gameplay/src/AIMessage.bc \
-	../../../gameplay/src/AIState.bc \
-	../../../gameplay/src/AIStateMachine.bc \
-	../../../gameplay/src/AbsoluteLayout.bc \
-	../../../gameplay/src/Animation.bc \
-	../../../gameplay/src/AnimationClip.bc \
-	../../../gameplay/src/AnimationController.bc \
-	../../../gameplay/src/AnimationTarget.bc \
-	../../../gameplay/src/AnimationValue.bc \
-	../../../gameplay/src/AudioBuffer.bc \
-	../../../gameplay/src/AudioController.bc \
-	../../../gameplay/src/AudioListener.bc \
-	../../../gameplay/src/AudioSource.bc \
-	../../../gameplay/src/BoundingBox.bc \
-	../../../gameplay/src/BoundingSphere.bc \
-	../../../gameplay/src/Button.bc \
-	../../../gameplay/src/Camera.bc \
-	../../../gameplay/src/CheckBox.bc \
-	../../../gameplay/src/Control.bc \
-	../../../gameplay/src/Curve.bc \
-	../../../gameplay/src/DebugNew.bc \
-	../../../gameplay/src/DepthStencilTarget.bc \
-	../../../gameplay/src/Effect.bc \
-	../../../gameplay/src/FileSystem.bc \
-	../../../gameplay/src/FlowLayout.bc \
-	../../../gameplay/src/Form.bc \
-	../../../gameplay/src/FrameBuffer.bc \
-	../../../gameplay/src/Frustum.bc \
-	../../../gameplay/src/Gamepad.bc \
-	../../../gameplay/src/HeightField.bc \
-	../../../gameplay/src/Image.bc \
-	../../../gameplay/src/Joint.bc \
-	../../../gameplay/src/Joystick.bc \
-	../../../gameplay/src/Label.bc \
-	../../../gameplay/src/Layout.bc \
-	../../../gameplay/src/Light.bc \
-	../../../gameplay/src/Logger.bc \
-	../../../gameplay/src/Material.bc \
-	../../../gameplay/src/MaterialParameter.bc \
-	../../../gameplay/src/MathUtil.bc \
-	../../../gameplay/src/Matrix.bc \
-	../../../gameplay/src/Mesh.bc \
-	../../../gameplay/src/MeshPart.bc \
-	../../../gameplay/src/MeshSkin.bc \
-	../../../gameplay/src/Model.bc \
-	../../../gameplay/src/Node.bc \
-	../../../gameplay/src/Pass.bc \
-	../../../gameplay/src/PhysicsCharacter.bc \
-	../../../gameplay/src/PhysicsCollisionObject.bc \
-	../../../gameplay/src/PhysicsCollisionShape.bc \
-	../../../gameplay/src/PhysicsConstraint.bc \
-	../../../gameplay/src/PhysicsController.bc \
-	../../../gameplay/src/PhysicsFixedConstraint.bc \
-	../../../gameplay/src/PhysicsGenericConstraint.bc \
-	../../../gameplay/src/PhysicsGhostObject.bc \
-	../../../gameplay/src/PhysicsHingeConstraint.bc \
-	../../../gameplay/src/PhysicsRigidBody.bc \
-	../../../gameplay/src/PhysicsSocketConstraint.bc \
-	../../../gameplay/src/PhysicsSpringConstraint.bc \
-	../../../gameplay/src/PhysicsVehicle.bc \
-	../../../gameplay/src/PhysicsVehicleWheel.bc \
-	../../../gameplay/src/Plane.bc \
-	../../../gameplay/src/Properties.bc \
-	../../../gameplay/src/Quaternion.bc \
-	../../../gameplay/src/RadioButton.bc \
-	../../../gameplay/src/Ray.bc \
-	../../../gameplay/src/Rectangle.bc \
-	../../../gameplay/src/Ref.bc \
-	../../../gameplay/src/RenderState.bc \
-	../../../gameplay/src/RenderTarget.bc \
-	../../../gameplay/src/Scene.bc \
-	../../../gameplay/src/SceneLoader.bc \
-	../../../gameplay/src/ScriptController.bc \
-	../../../gameplay/src/ScriptTarget.bc \
-	../../../gameplay/src/Slider.bc \
-	../../../gameplay/src/Technique.bc \
-	../../../gameplay/src/Terrain.bc \
-	../../../gameplay/src/TerrainPatch.bc \
-	../../../gameplay/src/TextBox.bc \
-	../../../gameplay/src/Texture.bc \
-	../../../gameplay/src/Theme.bc \
-	../../../gameplay/src/ThemeStyle.bc \
-	../../../gameplay/src/Transform.bc \
-	../../../gameplay/src/Vector2.bc \
-	../../../gameplay/src/Vector3.bc \
-	../../../gameplay/src/Vector4.bc \
-	../../../gameplay/src/VertexFormat.bc \
-	../../../gameplay/src/VerticalLayout.bc \
-	../../../gameplay/src/gameplay-main-emscripten.bc
-
-
-GP_HACKED_OBJECTS := \
-	../../../gameplay/src/VertexAttributeBinding.bc \
-	../../../gameplay/src/Bundle.bc \
-	../../../gameplay/src/Font.bc \
-	../../../gameplay/src/ScreenDisplayer.bc \
-	../../../gameplay/src/SpriteBatch.bc \
-	../../../gameplay/src/ParticleEmitter.bc \
-	../../../gameplay/src/MeshBatch.bc \
-	../../../gameplay/src/Container.bc \
-	../../../gameplay/src/Game.bc \
-	../../../gameplay/src/PlatformEmscripten.bc
-
-GP_LUA_OBJECTS := \
-    ../../../gameplay/src/lua//lua_AbsoluteLayout.bc \
-    ../../../gameplay/src/lua//lua_AIAgent.bc \
-    ../../../gameplay/src/lua//lua_AIAgentListener.bc \
-    ../../../gameplay/src/lua//lua_AIController.bc \
-    ../../../gameplay/src/lua//lua_AIMessage.bc \
-    ../../../gameplay/src/lua//lua_AIMessageParameterType.bc \
-    ../../../gameplay/src/lua//lua_AIState.bc \
-    ../../../gameplay/src/lua//lua_AIStateListener.bc \
-    ../../../gameplay/src/lua//lua_AIStateMachine.bc \
-    ../../../gameplay/src/lua//lua_all_bindings.bc \
-    ../../../gameplay/src/lua//lua_Animation.bc \
-    ../../../gameplay/src/lua//lua_AnimationClip.bc \
-    ../../../gameplay/src/lua//lua_AnimationClipListener.bc \
-    ../../../gameplay/src/lua//lua_AnimationClipListenerEventType.bc \
-    ../../../gameplay/src/lua//lua_AnimationController.bc \
-    ../../../gameplay/src/lua//lua_AnimationTarget.bc \
-    ../../../gameplay/src/lua//lua_AnimationValue.bc \
-    ../../../gameplay/src/lua//lua_AudioBuffer.bc \
-    ../../../gameplay/src/lua//lua_AudioController.bc \
-    ../../../gameplay/src/lua//lua_AudioListener.bc \
-    ../../../gameplay/src/lua//lua_AudioSource.bc \
-    ../../../gameplay/src/lua//lua_AudioSourceState.bc \
-    ../../../gameplay/src/lua//lua_BoundingBox.bc \
-    ../../../gameplay/src/lua//lua_BoundingSphere.bc \
-    ../../../gameplay/src/lua//lua_Bundle.bc \
-    ../../../gameplay/src/lua//lua_Button.bc \
-    ../../../gameplay/src/lua//lua_Camera.bc \
-    ../../../gameplay/src/lua//lua_CameraType.bc \
-    ../../../gameplay/src/lua//lua_CheckBox.bc \
-    ../../../gameplay/src/lua//lua_Container.bc \
-    ../../../gameplay/src/lua//lua_ContainerScroll.bc \
-    ../../../gameplay/src/lua//lua_Control.bc \
-    ../../../gameplay/src/lua//lua_ControlAlignment.bc \
-    ../../../gameplay/src/lua//lua_ControlListener.bc \
-    ../../../gameplay/src/lua//lua_ControlListenerEventType.bc \
-    ../../../gameplay/src/lua//lua_ControlState.bc \
-    ../../../gameplay/src/lua//lua_Curve.bc \
-    ../../../gameplay/src/lua//lua_CurveInterpolationType.bc \
-    ../../../gameplay/src/lua//lua_DepthStencilTarget.bc \
-    ../../../gameplay/src/lua//lua_DepthStencilTargetFormat.bc \
-    ../../../gameplay/src/lua//lua_Effect.bc \
-    ../../../gameplay/src/lua//lua_FileSystem.bc \
-    ../../../gameplay/src/lua//lua_FlowLayout.bc \
-    ../../../gameplay/src/lua//lua_Font.bc \
-    ../../../gameplay/src/lua//lua_FontJustify.bc \
-    ../../../gameplay/src/lua//lua_FontStyle.bc \
-    ../../../gameplay/src/lua//lua_FontText.bc \
-    ../../../gameplay/src/lua//lua_Form.bc \
-    ../../../gameplay/src/lua//lua_FrameBuffer.bc \
-    ../../../gameplay/src/lua//lua_Frustum.bc \
-    ../../../gameplay/src/lua//lua_Game.bc \
-    ../../../gameplay/src/lua//lua_GameClearFlags.bc \
-    ../../../gameplay/src/lua//lua_Gamepad.bc \
-    ../../../gameplay/src/lua//lua_GamepadButtonMapping.bc \
-    ../../../gameplay/src/lua//lua_GamepadGamepadEvent.bc \
-    ../../../gameplay/src/lua//lua_GameState.bc \
-    ../../../gameplay/src/lua//lua_Gesture.bc \
-    ../../../gameplay/src/lua//lua_GestureGestureEvent.bc \
-    ../../../gameplay/src/lua//lua_Global.bc \
-    ../../../gameplay/src/lua//lua_HeightField.bc \
-    ../../../gameplay/src/lua//lua_Image.bc \
-    ../../../gameplay/src/lua//lua_ImageFormat.bc \
-    ../../../gameplay/src/lua//lua_Joint.bc \
-    ../../../gameplay/src/lua//lua_Joystick.bc \
-    ../../../gameplay/src/lua//lua_Keyboard.bc \
-    ../../../gameplay/src/lua//lua_KeyboardKey.bc \
-    ../../../gameplay/src/lua//lua_KeyboardKeyEvent.bc \
-    ../../../gameplay/src/lua//lua_Label.bc \
-    ../../../gameplay/src/lua//lua_Layout.bc \
-    ../../../gameplay/src/lua//lua_LayoutType.bc \
-    ../../../gameplay/src/lua//lua_Light.bc \
-    ../../../gameplay/src/lua//lua_LightType.bc \
-    ../../../gameplay/src/lua//lua_Logger.bc \
-    ../../../gameplay/src/lua//lua_LoggerLevel.bc \
-    ../../../gameplay/src/lua//lua_Material.bc \
-    ../../../gameplay/src/lua//lua_MaterialParameter.bc \
-    ../../../gameplay/src/lua//lua_MathUtil.bc \
-    ../../../gameplay/src/lua//lua_Matrix.bc \
-    ../../../gameplay/src/lua//lua_Mesh.bc \
-    ../../../gameplay/src/lua//lua_MeshBatch.bc \
-    ../../../gameplay/src/lua//lua_MeshIndexFormat.bc \
-    ../../../gameplay/src/lua//lua_MeshPart.bc \
-    ../../../gameplay/src/lua//lua_MeshPrimitiveType.bc \
-    ../../../gameplay/src/lua//lua_MeshSkin.bc \
-    ../../../gameplay/src/lua//lua_Model.bc \
-    ../../../gameplay/src/lua//lua_Mouse.bc \
-    ../../../gameplay/src/lua//lua_MouseMouseEvent.bc \
-    ../../../gameplay/src/lua//lua_Node.bc \
-    ../../../gameplay/src/lua//lua_NodeCloneContext.bc \
-    ../../../gameplay/src/lua//lua_NodeType.bc \
-    ../../../gameplay/src/lua//lua_ParticleEmitter.bc \
-    ../../../gameplay/src/lua//lua_ParticleEmitterTextureBlending.bc \
-    ../../../gameplay/src/lua//lua_Pass.bc \
-    ../../../gameplay/src/lua//lua_PhysicsCharacter.bc \
-    ../../../gameplay/src/lua//lua_PhysicsCollisionObject.bc \
-    ../../../gameplay/src/lua//lua_PhysicsCollisionObjectCollisionListener.bc \
-    ../../../gameplay/src/lua//lua_PhysicsCollisionObjectCollisionListenerEventType.bc \
-    ../../../gameplay/src/lua//lua_PhysicsCollisionObjectCollisionPair.bc \
-    ../../../gameplay/src/lua//lua_PhysicsCollisionObjectType.bc \
-    ../../../gameplay/src/lua//lua_PhysicsCollisionShape.bc \
-    ../../../gameplay/src/lua//lua_PhysicsCollisionShapeDefinition.bc \
-    ../../../gameplay/src/lua//lua_PhysicsCollisionShapeType.bc \
-    ../../../gameplay/src/lua//lua_PhysicsConstraint.bc \
-    ../../../gameplay/src/lua//lua_PhysicsController.bc \
-    ../../../gameplay/src/lua//lua_PhysicsControllerHitFilter.bc \
-    ../../../gameplay/src/lua//lua_PhysicsControllerHitResult.bc \
-    ../../../gameplay/src/lua//lua_PhysicsControllerListener.bc \
-    ../../../gameplay/src/lua//lua_PhysicsControllerListenerEventType.bc \
-    ../../../gameplay/src/lua//lua_PhysicsFixedConstraint.bc \
-    ../../../gameplay/src/lua//lua_PhysicsGenericConstraint.bc \
-    ../../../gameplay/src/lua//lua_PhysicsGhostObject.bc \
-    ../../../gameplay/src/lua//lua_PhysicsHingeConstraint.bc \
-    ../../../gameplay/src/lua//lua_PhysicsRigidBody.bc \
-    ../../../gameplay/src/lua//lua_PhysicsRigidBodyParameters.bc \
-    ../../../gameplay/src/lua//lua_PhysicsSocketConstraint.bc \
-    ../../../gameplay/src/lua//lua_PhysicsSpringConstraint.bc \
-    ../../../gameplay/src/lua//lua_PhysicsVehicle.bc \
-    ../../../gameplay/src/lua//lua_PhysicsVehicleWheel.bc \
-    ../../../gameplay/src/lua//lua_Plane.bc \
-    ../../../gameplay/src/lua//lua_Platform.bc \
-    ../../../gameplay/src/lua//lua_Properties.bc \
-    ../../../gameplay/src/lua//lua_PropertiesType.bc \
-    ../../../gameplay/src/lua//lua_Quaternion.bc \
-    ../../../gameplay/src/lua//lua_RadioButton.bc \
-    ../../../gameplay/src/lua//lua_Ray.bc \
-    ../../../gameplay/src/lua//lua_Rectangle.bc \
-    ../../../gameplay/src/lua//lua_Ref.bc \
-    ../../../gameplay/src/lua//lua_RenderState.bc \
-    ../../../gameplay/src/lua//lua_RenderStateAutoBinding.bc \
-    ../../../gameplay/src/lua//lua_RenderStateBlend.bc \
-    ../../../gameplay/src/lua//lua_RenderStateDepthFunction.bc \
-    ../../../gameplay/src/lua//lua_RenderStateStateBlock.bc \
-    ../../../gameplay/src/lua//lua_RenderTarget.bc \
-    ../../../gameplay/src/lua//lua_Scene.bc \
-    ../../../gameplay/src/lua//lua_SceneDebugFlags.bc \
-    ../../../gameplay/src/lua//lua_ScreenDisplayer.bc \
-    ../../../gameplay/src/lua//lua_ScriptController.bc \
-    ../../../gameplay/src/lua//lua_ScriptTarget.bc \
-    ../../../gameplay/src/lua//lua_Slider.bc \
-    ../../../gameplay/src/lua//lua_SpriteBatch.bc \
-    ../../../gameplay/src/lua//lua_Technique.bc \
-    ../../../gameplay/src/lua//lua_Terrain.bc \
-    ../../../gameplay/src/lua//lua_TerrainFlags.bc \
-    ../../../gameplay/src/lua//lua_TextBox.bc \
-    ../../../gameplay/src/lua//lua_Texture.bc \
-    ../../../gameplay/src/lua//lua_TextureFilter.bc \
-    ../../../gameplay/src/lua//lua_TextureFormat.bc \
-    ../../../gameplay/src/lua//lua_TextureSampler.bc \
-    ../../../gameplay/src/lua//lua_TextureWrap.bc \
-    ../../../gameplay/src/lua//lua_Theme.bc \
-    ../../../gameplay/src/lua//lua_ThemeSideRegions.bc \
-    ../../../gameplay/src/lua//lua_ThemeStyle.bc \
-    ../../../gameplay/src/lua//lua_ThemeThemeImage.bc \
-    ../../../gameplay/src/lua//lua_ThemeUVs.bc \
-    ../../../gameplay/src/lua//lua_Touch.bc \
-    ../../../gameplay/src/lua//lua_TouchTouchEvent.bc \
-    ../../../gameplay/src/lua//lua_Transform.bc \
-    ../../../gameplay/src/lua//lua_TransformListener.bc \
-    ../../../gameplay/src/lua//lua_Uniform.bc \
-    ../../../gameplay/src/lua//lua_Vector2.bc \
-    ../../../gameplay/src/lua//lua_Vector3.bc \
-    ../../../gameplay/src/lua//lua_Vector4.bc \
-    ../../../gameplay/src/lua//lua_VertexAttributeBinding.bc \
-    ../../../gameplay/src/lua//lua_VertexFormat.bc \
-    ../../../gameplay/src/lua//lua_VertexFormatElement.bc \
-    ../../../gameplay/src/lua//lua_VertexFormatUsage.bc \
-    ../../../gameplay/src/lua//lua_VerticalLayout.bc
-
-LUA_OBJECTS := \
-	../../../externals/lua-5.2.1/src/lapi.bc \
-	../../../externals/lua-5.2.1/src/lauxlib.bc \
-	../../../externals/lua-5.2.1/src/lbaselib.bc \
-	../../../externals/lua-5.2.1/src/lbitlib.bc \
-	../../../externals/lua-5.2.1/src/lcode.bc \
-	../../../externals/lua-5.2.1/src/lcorolib.bc \
-	../../../externals/lua-5.2.1/src/lctype.bc \
-	../../../externals/lua-5.2.1/src/ldblib.bc \
-	../../../externals/lua-5.2.1/src/ldebug.bc \
-	../../../externals/lua-5.2.1/src/ldo.bc \
-	../../../externals/lua-5.2.1/src/ldump.bc \
-	../../../externals/lua-5.2.1/src/lfunc.bc \
-	../../../externals/lua-5.2.1/src/lgc.bc \
-	../../../externals/lua-5.2.1/src/linit.bc \
-	../../../externals/lua-5.2.1/src/liolib.bc \
-	../../../externals/lua-5.2.1/src/llex.bc \
-	../../../externals/lua-5.2.1/src/lmathlib.bc \
-	../../../externals/lua-5.2.1/src/lmem.bc \
-	../../../externals/lua-5.2.1/src/loadlib.bc \
-	../../../externals/lua-5.2.1/src/lobject.bc \
-	../../../externals/lua-5.2.1/src/lopcodes.bc \
-	../../../externals/lua-5.2.1/src/loslib.bc \
-	../../../externals/lua-5.2.1/src/lparser.bc \
-	../../../externals/lua-5.2.1/src/lstate.bc \
-	../../../externals/lua-5.2.1/src/lstring.bc \
-	../../../externals/lua-5.2.1/src/lstrlib.bc \
-	../../../externals/lua-5.2.1/src/ltable.bc \
-	../../../externals/lua-5.2.1/src/ltablib.bc \
-	../../../externals/lua-5.2.1/src/ltm.bc \
-	../../../externals/lua-5.2.1/src/lundump.bc \
-	../../../externals/lua-5.2.1/src/lvm.bc \
-	../../../externals/lua-5.2.1/src/lzio.bc
-
-LIBPNG_OBJECTS := \
-	../../../externals/libpng-1.4.8/example.bc \
-	../../../externals/libpng-1.4.8/png.bc \
-	../../../externals/libpng-1.4.8/pngerror.bc \
-	../../../externals/libpng-1.4.8/pngget.bc \
-	../../../externals/libpng-1.4.8/pngmem.bc \
-	../../../externals/libpng-1.4.8/pngpread.bc \
-	../../../externals/libpng-1.4.8/pngread.bc \
-	../../../externals/libpng-1.4.8/pngrio.bc \
-	../../../externals/libpng-1.4.8/pngrtran.bc \
-	../../../externals/libpng-1.4.8/pngrutil.bc \
-	../../../externals/libpng-1.4.8/pngset.bc \
-	../../../externals/libpng-1.4.8/pngtrans.bc \
-	../../../externals/libpng-1.4.8/pngwio.bc \
-	../../../externals/libpng-1.4.8/pngwrite.bc \
-	../../../externals/libpng-1.4.8/pngwtran.bc \
-	../../../externals/libpng-1.4.8/pngwutil.bc
-
-ZLIB_OBJECTS := \
-	../../../externals/zlib-1.2.7/adler32.bc \
-	../../../externals/zlib-1.2.7/compress.bc \
-	../../../externals/zlib-1.2.7/crc32.bc \
-	../../../externals/zlib-1.2.7/deflate.bc \
-	../../../externals/zlib-1.2.7/gzclose.bc \
-	../../../externals/zlib-1.2.7/gzlib.bc \
-	../../../externals/zlib-1.2.7/gzread.bc \
-	../../../externals/zlib-1.2.7/gzwrite.bc \
-	../../../externals/zlib-1.2.7/infback.bc \
-	../../../externals/zlib-1.2.7/inffast.bc \
-	../../../externals/zlib-1.2.7/inflate.bc \
-	../../../externals/zlib-1.2.7/inftrees.bc \
-	../../../externals/zlib-1.2.7/trees.bc \
-	../../../externals/zlib-1.2.7/uncompr.bc \
-	../../../externals/zlib-1.2.7/zutil.bc
-
-BULLET_OBJECTS := \
-	../../../externals/bullet-2.81-rev2613/src//BulletCollision/BroadphaseCollision/btAxisSweep3.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletCollision/BroadphaseCollision/btBroadphaseProxy.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletCollision/BroadphaseCollision/btCollisionAlgorithm.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletCollision/BroadphaseCollision/btDbvt.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletCollision/BroadphaseCollision/btDbvtBroadphase.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletCollision/BroadphaseCollision/btDispatcher.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletCollision/BroadphaseCollision/btMultiSapBroadphase.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletCollision/BroadphaseCollision/btOverlappingPairCache.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletCollision/BroadphaseCollision/btQuantizedBvh.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletCollision/BroadphaseCollision/btSimpleBroadphase.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletCollision/CollisionDispatch/SphereTriangleDetector.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletCollision/CollisionDispatch/btActivatingCollisionAlgorithm.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletCollision/CollisionDispatch/btBox2dBox2dCollisionAlgorithm.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletCollision/CollisionDispatch/btBoxBoxCollisionAlgorithm.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletCollision/CollisionDispatch/btBoxBoxDetector.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletCollision/CollisionDispatch/btCollisionDispatcher.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletCollision/CollisionDispatch/btCollisionObject.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletCollision/CollisionDispatch/btCollisionWorld.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletCollision/CollisionDispatch/btCompoundCollisionAlgorithm.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletCollision/CollisionDispatch/btConvex2dConvex2dAlgorithm.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletCollision/CollisionDispatch/btConvexConcaveCollisionAlgorithm.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletCollision/CollisionDispatch/btConvexConvexAlgorithm.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletCollision/CollisionDispatch/btConvexPlaneCollisionAlgorithm.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletCollision/CollisionDispatch/btDefaultCollisionConfiguration.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletCollision/CollisionDispatch/btEmptyCollisionAlgorithm.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletCollision/CollisionDispatch/btGhostObject.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletCollision/CollisionDispatch/btInternalEdgeUtility.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletCollision/CollisionDispatch/btManifoldResult.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletCollision/CollisionDispatch/btSimulationIslandManager.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletCollision/CollisionDispatch/btSphereBoxCollisionAlgorithm.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletCollision/CollisionDispatch/btSphereSphereCollisionAlgorithm.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletCollision/CollisionDispatch/btSphereTriangleCollisionAlgorithm.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletCollision/CollisionDispatch/btUnionFind.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletCollision/CollisionShapes/btBox2dShape.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletCollision/CollisionShapes/btBoxShape.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletCollision/CollisionShapes/btBvhTriangleMeshShape.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletCollision/CollisionShapes/btCapsuleShape.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletCollision/CollisionShapes/btCollisionShape.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletCollision/CollisionShapes/btCompoundShape.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletCollision/CollisionShapes/btConcaveShape.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletCollision/CollisionShapes/btConeShape.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletCollision/CollisionShapes/btConvex2dShape.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletCollision/CollisionShapes/btConvexHullShape.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletCollision/CollisionShapes/btConvexInternalShape.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletCollision/CollisionShapes/btConvexPointCloudShape.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletCollision/CollisionShapes/btConvexPolyhedron.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletCollision/CollisionShapes/btConvexShape.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletCollision/CollisionShapes/btConvexTriangleMeshShape.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletCollision/CollisionShapes/btCylinderShape.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletCollision/CollisionShapes/btEmptyShape.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletCollision/CollisionShapes/btHeightfieldTerrainShape.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletCollision/CollisionShapes/btMinkowskiSumShape.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletCollision/CollisionShapes/btMultiSphereShape.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletCollision/CollisionShapes/btMultimaterialTriangleMeshShape.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletCollision/CollisionShapes/btOptimizedBvh.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletCollision/CollisionShapes/btPolyhedralConvexShape.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletCollision/CollisionShapes/btScaledBvhTriangleMeshShape.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletCollision/CollisionShapes/btShapeHull.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletCollision/CollisionShapes/btSphereShape.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletCollision/CollisionShapes/btStaticPlaneShape.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletCollision/CollisionShapes/btStridingMeshInterface.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletCollision/CollisionShapes/btTetrahedronShape.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletCollision/CollisionShapes/btTriangleBuffer.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletCollision/CollisionShapes/btTriangleCallback.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletCollision/CollisionShapes/btTriangleIndexVertexArray.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletCollision/CollisionShapes/btTriangleIndexVertexMaterialArray.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletCollision/CollisionShapes/btTriangleMesh.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletCollision/CollisionShapes/btTriangleMeshShape.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletCollision/CollisionShapes/btUniformScalingShape.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletCollision/Gimpact/btContactProcessing.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletCollision/Gimpact/btGImpactBvh.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletCollision/Gimpact/btGImpactCollisionAlgorithm.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletCollision/Gimpact/btGImpactQuantizedBvh.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletCollision/Gimpact/btGImpactShape.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletCollision/Gimpact/btGenericPoolAllocator.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletCollision/Gimpact/btTriangleShapeEx.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletCollision/Gimpact/gim_box_set.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletCollision/Gimpact/gim_contact.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletCollision/Gimpact/gim_memory.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletCollision/Gimpact/gim_tri_collision.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletCollision/NarrowPhaseCollision/btContinuousConvexCollision.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletCollision/NarrowPhaseCollision/btConvexCast.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletCollision/NarrowPhaseCollision/btGjkConvexCast.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletCollision/NarrowPhaseCollision/btGjkEpa2.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletCollision/NarrowPhaseCollision/btGjkEpaPenetrationDepthSolver.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletCollision/NarrowPhaseCollision/btGjkPairDetector.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletCollision/NarrowPhaseCollision/btMinkowskiPenetrationDepthSolver.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletCollision/NarrowPhaseCollision/btPersistentManifold.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletCollision/NarrowPhaseCollision/btPolyhedralContactClipping.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletCollision/NarrowPhaseCollision/btRaycastCallback.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletCollision/NarrowPhaseCollision/btSubSimplexConvexCast.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletCollision/NarrowPhaseCollision/btVoronoiSimplexSolver.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletDynamics/Character/btKinematicCharacterController.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletDynamics/ConstraintSolver/btConeTwistConstraint.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletDynamics/ConstraintSolver/btContactConstraint.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletDynamics/ConstraintSolver/btGearConstraint.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletDynamics/ConstraintSolver/btGeneric6DofConstraint.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletDynamics/ConstraintSolver/btGeneric6DofSpringConstraint.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletDynamics/ConstraintSolver/btHinge2Constraint.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletDynamics/ConstraintSolver/btHingeConstraint.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletDynamics/ConstraintSolver/btPoint2PointConstraint.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletDynamics/ConstraintSolver/btSequentialImpulseConstraintSolver.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletDynamics/ConstraintSolver/btSliderConstraint.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletDynamics/ConstraintSolver/btSolve2LinearConstraint.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletDynamics/ConstraintSolver/btTypedConstraint.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletDynamics/ConstraintSolver/btUniversalConstraint.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletDynamics/Dynamics/Bullet-C-API.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletDynamics/Dynamics/btDiscreteDynamicsWorld.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletDynamics/Dynamics/btRigidBody.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletDynamics/Dynamics/btSimpleDynamicsWorld.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletDynamics/Vehicle/btRaycastVehicle.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletDynamics/Vehicle/btWheelInfo.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletMultiThreaded/SequentialThreadSupport.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletMultiThreaded/SpuCollisionObjectWrapper.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletMultiThreaded/SpuCollisionTaskProcess.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletMultiThreaded/SpuContactManifoldCollisionAlgorithm.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletMultiThreaded/SpuFakeDma.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletMultiThreaded/SpuGatheringCollisionDispatcher.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletMultiThreaded/SpuLibspe2Support.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletMultiThreaded/SpuNarrowPhaseCollisionTask/SpuCollisionShapes.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletMultiThreaded/SpuNarrowPhaseCollisionTask/SpuContactResult.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletMultiThreaded/SpuNarrowPhaseCollisionTask/SpuGatheringCollisionTask.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletMultiThreaded/SpuNarrowPhaseCollisionTask/SpuMinkowskiPenetrationDepthSolver.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletMultiThreaded/SpuNarrowPhaseCollisionTask/boxBoxDistance.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletMultiThreaded/SpuSampleTask/SpuSampleTask.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletMultiThreaded/SpuSampleTaskProcess.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletMultiThreaded/Win32ThreadSupport.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletMultiThreaded/btGpu3DGridBroadphase.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletMultiThreaded/btParallelConstraintSolver.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletMultiThreaded/btThreadSupportInterface.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletSoftBody/btDefaultSoftBodySolver.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletSoftBody/btSoftBody.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletSoftBody/btSoftBodyConcaveCollisionAlgorithm.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletSoftBody/btSoftBodyHelpers.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletSoftBody/btSoftBodyRigidBodyCollisionConfiguration.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletSoftBody/btSoftRigidCollisionAlgorithm.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletSoftBody/btSoftRigidDynamicsWorld.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletSoftBody/btSoftSoftCollisionAlgorithm.bc \
-	../../../externals/bullet-2.81-rev2613/src//LinearMath/btAlignedAllocator.bc \
-	../../../externals/bullet-2.81-rev2613/src//LinearMath/btConvexHull.bc \
-	../../../externals/bullet-2.81-rev2613/src//LinearMath/btConvexHullComputer.bc \
-	../../../externals/bullet-2.81-rev2613/src//LinearMath/btGeometryUtil.bc \
-	../../../externals/bullet-2.81-rev2613/src//LinearMath/btPolarDecomposition.bc \
-	../../../externals/bullet-2.81-rev2613/src//LinearMath/btQuickprof.bc \
-	../../../externals/bullet-2.81-rev2613/src//LinearMath/btSerializer.bc \
-	../../../externals/bullet-2.81-rev2613/src//LinearMath/btVector3.bc \
-	../../../externals/bullet-2.81-rev2613/src//MiniCL/MiniCL.bc \
-	../../../externals/bullet-2.81-rev2613/src//MiniCL/MiniCLTask/MiniCLTask.bc \
-	../../../externals/bullet-2.81-rev2613/src//MiniCL/MiniCLTaskScheduler.bc
-
-
-OBJECTS := \
-	build/AL/fakeal.bc \
-	ParticlesGame.bc \
-	$(GP_HACKED_OBJECTS)
+all: $(SAMPLES)
 
 INTERMEDIATE_OBJECTS := \
-	libbullet.bc \
-	liblua.bc \
-	libz.bc \
-	libpng.bc \
-	libgameplay.bc
+	externals/libbullet.bc \
+	externals/liblua.bc \
+	externals/libz.bc \
+	externals/libpng.bc \
+	externals/libfakeal.bc \
+	gameplay/libgameplay.bc
 
-libbullet.bc: $(BULLET_OBJECTS)
-	$(EMCC) $(EMCC_FLAGS) $(BULLET_OBJECTS) -o libbullet.bc
+externals/libbullet.bc:
+	make -C externals -f EMMakefile libbullet.bc -j 4
 
-liblua.bc: $(LUA_OBJECTS)
-	$(EMCC) $(EMCC_FLAGS) $(LUA_OBJECTS) -o liblua.bc
+externals/liblua.bc:
+	make -C externals -f EMMakefile liblua.bc -j 4
 
-libz.bc: $(ZLIB_OBJECTS)
-	$(EMCC) $(EMCC_FLAGS) $(ZLIB_OBJECTS) -o libz.bc
+externals/libz.bc:
+	make -C externals -f EMMakefile libz.bc -j 4
 
-libpng.bc: $(LIBPNG_OBJECTS)
-	$(EMCC) $(EMCC_FLAGS) $(LIBPNG_OBJECTS) -o libpng.bc
+externals/libpng.bc:
+	make -C externals -f EMMakefile libpng.bc -j 4
 
-libgameplay.bc: $(GAMEPLAY_OBJECTS) $(GP_LUA_OBJECTS)
-	$(EMCC) $(EMCC_FLAGS) $(GAMEPLAY_OBJECTS) $(GP_LUA_OBJECTS) -o libgameplay.bc
+externals/libfakeal.bc:
+	make -C externals -f EMMakefile libfakeal.bc -j 4
 
-TO_CLEAN := \
-	$(BULLET_OBJECTS) \
-	$(LUA_OBJECTS) \
-	$(ZLIB_OBJECTS) \
-	$(LIBPNG_OBJECTS) \
-	$(GAMEPLAY_OBJECTS) \
-	$(GP_HACKED_OBJECTS) \
-	$(GP_LUA_OBJECTS)
-
-%.bc: %.cpp
-	$(EMCC)  \
-		-Ibuild \
-		-I../../../externals/libpng-1.4.8/ \
-		-I../../../externals/lua-5.2.1/src/ \
-		-I../../../externals/bullet-2.81-rev2613/src \
-		-I../../../external-deps/oggvorbis/include/ \
-		-I../../../../emscripten/system/include/ \
-		-I../../../gameplay/src \
-		$(EMCC_FLAGS) -o $@ $<
-
-# -D__ANDROID__ \
-
-%.bc: %.c
-	$(EMCC)  \
-		$(EMCC_FLAGS) -o $@ $<
-
-ParticlesGame.html: $(OBJECTS) $(INTERMEDIATE_OBJECTS)
-	cp -avf ../res .
-	$(EMCC) $(EMCC_FLAGS) -o ParticlesGame.html $(INTERMEDIATE_OBJECTS) $(OBJECTS) --preload-file res
+gameplay/libgameplay.bc:
+	make -C gameplay -f EMMakefile libgameplay.bc -j 4
 
 clean:
-	rm -f $(OBJECTS) $(INTERMEDIATE_OBJECTS) $(TO_CLEAN)
-	rm -rf res
-	$(EMCC) --clear-cache
+	make -C externals -f EMMakefile clean
+	make -C gameplay -f EMMakefile clean
+	rm -rf gameplay-samples/sample04-particles/dist
 
-# \
-	../../../externals/bullet-2.81-rev2613/src//BulletMultiThreaded/GpuSoftBodySolvers/DX11/btSoftBodySolver_DX11.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletMultiThreaded/GpuSoftBodySolvers/DX11/btSoftBodySolver_DX11SIMDAware.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletMultiThreaded/GpuSoftBodySolvers/OpenCL/MiniCL/MiniCLTaskWrap.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletMultiThreaded/GpuSoftBodySolvers/OpenCL/btSoftBodySolverOutputCLtoGL.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletMultiThreaded/GpuSoftBodySolvers/OpenCL/btSoftBodySolver_OpenCL.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletMultiThreaded/GpuSoftBodySolvers/OpenCL/btSoftBodySolver_OpenCLSIMDAware.bc \
-	../../../externals/bullet-2.81-rev2613/src//BulletMultiThreaded/PosixThreadSupport.bc \
-	../../../externals/lua-5.2.1/src/lua.bc \
-	../../../gameplay/src/PlatformAndroid.bc \
-	../../../gameplay/src/PlatformBlackBerry.bc \
-	../../../gameplay/src/PlatformWindows.bc \
-	../../../gameplay/src/gameplay-main-android.bc \
-	../../../gameplay/src/gameplay-main-blackberry.bc \
-	../../../gameplay/src/gameplay-main-windows.bc \
-	../../../externals/libpng-1.4.8/pngtest.bc \
-	../../../externals/lua-5.2.1/src/luac.bc \
-	../../../gameplay/src/PlatformLinux.bc \
-	../../../gameplay/src/gameplay-main-linux.bc
+.PHONY: $(INTERMEDIATE_OBJECTS) clean
+
+# XXX: Build samples from toplevel makefile for now, as this has the paths to
+# all the libs that need to be linked in. Structure for all these is that there
+# is a step to package up all the files that the app needs at runtime, and a
+# step to compile the app and link in all the libraries.
+gameplay-samples/sample04-particles/dist/index.data:
+	(cd gameplay-samples/sample04-particles; \
+    mkdir -p dist; \
+    python ../../externals/emscripten/tools/file_packager.py index.data --preload res --pre-run > dist/preload.js; \
+    mv index.data dist)
+
+gameplay-samples/sample04-particles/dist/index.html: $(INTERMEDIATE_OBJECTS) gameplay-samples/sample04-particles/src/ParticlesGame.cpp gameplay-samples/sample04-particles/dist/index.data
+	mkdir -p gameplay-samples/sample04-particles/dist
+	$(EMCC) $(EMCC_FLAGS) \
+		-o gameplay-samples/sample04-particles/dist/index.html \
+		--pre-js gameplay-samples/sample04-particles/dist/preload.js \
+		-Iexternals/libpng-1.4.8/ \
+		-Iexternals/lua-5.2.1/src/ \
+		-Igameplay/src \
+		-Iexternals/bullet-2.81-rev2613/src \
+		-Iexternals/fakeogg/ \
+		-Iexternal-deps/oggvorbis/include/ \
+		-Iexternals/emscripten/system/include/ \
+		gameplay-samples/sample04-particles/src/ParticlesGame.cpp \
+		$(INTERMEDIATE_OBJECTS)
 
