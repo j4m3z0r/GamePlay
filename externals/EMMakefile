@@ -1,4 +1,4 @@
-EMCC_FLAGS:=-s FULL_ES2=1 -g -D_DEBUG --jcache 
+EMCC_FLAGS:=-s FULL_ES2=1 -g -D_DEBUG --jcache
 
 EMCC:=emscripten/emcc
 
@@ -223,7 +223,7 @@ BULLET_OBJECTS := \
 	bullet-2.81-rev2613/src//MiniCL/MiniCLTaskScheduler.bc
 
 FAKE_AL_OBJECTS := \
-	fakeal/AL/fakeal.c
+	fakeal/AL/fakeal.bc
 
 INTERMEDIATE_OBJECTS := \
 	libbullet.bc \
@@ -246,19 +246,23 @@ libz.bc: $(ZLIB_OBJECTS)
 libpng.bc: $(LIBPNG_OBJECTS)
 	$(EMCC) $(EMCC_FLAGS) $(LIBPNG_OBJECTS) -o libpng.bc
 
+libfakeal.bc: $(FAKE_AL_OBJECTS)
+	$(EMCC) $(EMCC_FLAGS) $(FAKE_AL_OBJECTS) -o libfakeal.bc
+
 TO_CLEAN := \
 	$(BULLET_OBJECTS) \
 	$(LUA_OBJECTS) \
 	$(ZLIB_OBJECTS) \
-	$(LIBPNG_OBJECTS)
+	$(LIBPNG_OBJECTS) \
+	$(FAKE_AL_OBJECTS)
 
 # XXX: Slightly hacky including all the -I flags for all projects, but doesn't
 # seem to break anything.
 %.bc: %.cpp
-	$(EMCC) -Iemscripten/system/include/ -Ilibpng-1.4.8/ -Ilua-5.2.1/src/ -Ibullet-2.81-rev2613/src $(EMCC_FLAGS) -o $@ $<
+	$(EMCC) -c -Iemscripten/system/include/ -Ilibpng-1.4.8/ -Ilua-5.2.1/src/ -Ibullet-2.81-rev2613/src $(EMCC_FLAGS) -o $@ $<
 
 %.bc: %.c
-	$(EMCC) $(EMCC_FLAGS) -o $@ $<
+	$(EMCC) -c $(EMCC_FLAGS) -o $@ $<
 
 clean:
 	rm -f $(INTERMEDIATE_OBJECTS) $(TO_CLEAN)
