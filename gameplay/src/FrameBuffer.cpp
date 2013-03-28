@@ -154,6 +154,10 @@ unsigned int FrameBuffer::getMaxRenderTargets()
 
 void FrameBuffer::setRenderTarget(RenderTarget* target, unsigned int index)
 {
+#ifdef EMSCRIPTEN
+    return;
+#endif // EMSCRIPTEN
+
     GP_ASSERT(index < _maxRenderTargets);
     GP_ASSERT(_renderTargets);
 
@@ -247,6 +251,9 @@ DepthStencilTarget* FrameBuffer::getDepthStencilTarget() const
 
 FrameBuffer* FrameBuffer::bind()
 {
+#ifdef EMSCRIPTEN
+    return NULL;
+#endif // EMSCRIPTEN
     GL_ASSERT( glBindFramebuffer(GL_FRAMEBUFFER, _handle) );
     FrameBuffer* previousFrameBuffer = _currentFrameBuffer;
     _currentFrameBuffer = this;
@@ -255,6 +262,9 @@ FrameBuffer* FrameBuffer::bind()
 
 FrameBuffer* FrameBuffer::bindDefault()
 {
+#ifdef EMSCRIPTEN
+    return NULL;
+#endif // EMSCRIPTEN
     GL_ASSERT( glBindFramebuffer(GL_FRAMEBUFFER, _defaultFrameBuffer->_handle) );
     _currentFrameBuffer = _defaultFrameBuffer;
     return _defaultFrameBuffer;
