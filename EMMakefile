@@ -1,4 +1,8 @@
-EMCC_FLAGS:=-s FULL_ES2=1 -g -O1 -D_DEBUG --jcache 
+#EMCC_FLAGS:=-s FULL_ES2=1 -g -O1 -D_DEBUG --jcache 
+#EMCC_FLAGS:=-O0 -D_DEBUG --jcache -s GL_DEBUG=1 -s GL_UNSAFE_OPTS=0
+#EMCC_FLAGS:=-O0 -D_DEBUG --jcache -s GL_UNSAFE_OPTS=0
+#EMCC_FLAGS:=-O0 --jcache -s GL_UNSAFE_OPTS=0
+EMCC_FLAGS:=-O1 --jcache -s GL_UNSAFE_OPTS=0
 
 EMCC:=externals/emscripten/emcc
 
@@ -13,7 +17,8 @@ INTERMEDIATE_OBJECTS := \
 	externals/libz.bc \
 	externals/libpng.bc \
 	externals/libfakeal.bc \
-	gameplay/libgameplay.bc
+	gameplay/libgameplay.bc \
+	gameplay/libgphacked.bc
 
 externals/libbullet.bc:
 	make -C externals -f EMMakefile libbullet.bc -j 4
@@ -33,12 +38,15 @@ externals/libfakeal.bc:
 gameplay/libgameplay.bc:
 	make -C gameplay -f EMMakefile libgameplay.bc -j 4
 
+gameplay/libgphacked.bc:
+	make -C gameplay -f EMMakefile libgphacked.bc -j 4
+
 clean:
 	make -C externals -f EMMakefile clean
 	make -C gameplay -f EMMakefile clean
 	rm -rf gameplay-samples/sample04-particles/dist
 
-.PHONY: $(INTERMEDIATE_OBJECTS) clean
+.PHONY: $(INTERMEDIATE_OBJECTS) clean gameplay-samples/sample04-particles/dist/index.data
 
 # XXX: Build samples from toplevel makefile for now, as this has the paths to
 # all the libs that need to be linked in. Structure for all these is that there
@@ -64,4 +72,6 @@ gameplay-samples/sample04-particles/dist/index.html: $(INTERMEDIATE_OBJECTS) gam
 		-Iexternals/emscripten/system/include/ \
 		gameplay-samples/sample04-particles/src/ParticlesGame.cpp \
 		$(INTERMEDIATE_OBJECTS)
+	# Hack to set the canvas to the appropriate size.
+	perl -i -pe 's/id="canvas"/width="800" height="600" id="canvas"/' gameplay-samples/sample04-particles/dist/index.html
 
