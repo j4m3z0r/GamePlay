@@ -7,6 +7,9 @@ namespace gameplay
 MeshBatch::MeshBatch(const VertexFormat& vertexFormat, Mesh::PrimitiveType primitiveType, Material* material, bool indexed, unsigned int initialCapacity, unsigned int growSize)
     : _vertexFormat(vertexFormat), _primitiveType(primitiveType), _material(material), _indexed(indexed), _capacity(0), _growSize(growSize),
       _vertexCapacity(0), _indexCapacity(0), _vertexCount(0), _indexCount(0), _vertices(NULL), _verticesPtr(NULL), _indices(NULL), _indicesPtr(NULL)
+#ifdef EMSCRIPTEN
+      , _vertexDataObject(0), _vertexDataObjectSize(0), _indexDataObject(0), _indexDataObjectSize(0)
+#endif // EMSCRIPTEN
 {
     resize(initialCapacity);
 }
@@ -44,6 +47,23 @@ MeshBatch* MeshBatch::create(const VertexFormat& vertexFormat, Mesh::PrimitiveTy
 
 void MeshBatch::updateVertexAttributeBinding()
 {
+#ifdef EMSCRIPTEN
+    // We re-allocate the buffer if the new data-set is larger than was
+    // previously allocated. Otherwise, we just overwrite the old data.
+    GLuint voSize = _vertexFormat.getVertexSize() * _vertexCapacity;
+    if(voSize > _vertexDataObjectSize)
+    {
+        _vertexDataObjectSize = voSize;
+        if(_vertexDataObject)
+        {
+            GL_ASSERT( glDeleteBuffers(1, &_vertexDataObject) );
+        }
+        GL_ASSERT( glGenBuffers(1, &_vertexDataObject) );
+    }
+    GL_ASSERT( glBindBuffer(GL_ARRAY_BUFFER, _vertexDataObject) );
+    GL_ASSERT( glBufferData(GL_ARRAY_BUFFER, voSize, _vertices, GL_STATIC_DRAW) );
+#endif // EMSCRIPTEN
+
     GP_ASSERT(_material);
 
     // Update our vertex attribute bindings.
@@ -151,7 +171,11 @@ bool MeshBatch::resize(unsigned int capacity)
     _indexCapacity = indexCapacity;
 
     // Update our vertex attribute bindings now that our client array pointers have changed
+#ifndef EMSCRIPTEN
+    // WebGL needs complete uploaded buffers to bind attributes to, so we defer
+    // this until the ::draw call, when we know the buffers will be complete.
     updateVertexAttributeBinding();
+#endif // EMSCRIPTEN
 
     return true;
 }
@@ -175,7 +199,13 @@ void MeshBatch::draw()
 
     // Not using VBOs, so unbind the element array buffer.
     // ARRAY_BUFFER will be unbound automatically during pass->bind().
+#ifndef EMSCRIPTEN
     GL_ASSERT( glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0 ) );
+#endif // EMSCRIPTEN
+
+#ifdef EMSCRIPTEN
+    updateVertexAttributeBinding();
+#endif // EMSCRIPTEN
 
     GP_ASSERT(_material);
     if (_indexed)
@@ -184,6 +214,8 @@ void MeshBatch::draw()
     // Bind the material.
     Technique* technique = _material->getTechnique();
     GP_ASSERT(technique);
+
+
     unsigned int passCount = technique->getPassCount();
     for (unsigned int i = 0; i < passCount; ++i)
     {
@@ -193,7 +225,24 @@ void MeshBatch::draw()
 
         if (_indexed)
         {
+#ifdef EMSCRIPTEN
+            GLuint ioSize = _indexCount * 2;
+            if(ioSize > _indexDataObjectSize)
+            {
+                _indexDataObjectSize = ioSize;
+                if(_indexDataObject)
+                {
+                    GL_ASSERT( glDeleteBuffers(1, &_indexDataObject) );
+                }
+                GL_ASSERT( glGenBuffers(1, &_indexDataObject) );
+            }
+            GL_ASSERT( glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, _indexDataObject) );
+            GL_ASSERT( glBufferData( GL_ELEMENT_ARRAY_BUFFER, ioSize, _indices, GL_STATIC_DRAW) );
+
+            GL_ASSERT( glDrawElements(_primitiveType, _indexCount, GL_UNSIGNED_SHORT, (GLvoid*)0) );
+#else
             GL_ASSERT( glDrawElements(_primitiveType, _indexCount, GL_UNSIGNED_SHORT, (GLvoid*)_indices) );
+#endif // EMSCRIPTEN
         }
         else
         {
