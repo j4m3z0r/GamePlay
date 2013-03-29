@@ -18,6 +18,10 @@
     #define gp_stat_struct struct stat
 #endif
 
+#ifdef EMSCRIPTEN
+#undef __ANDROID__
+#endif // EMSCRIPTEN
+
 #ifdef __ANDROID__
 #include <android/asset_manager.h>
 extern AAssetManager* __assetManager;
