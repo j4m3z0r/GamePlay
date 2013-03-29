@@ -51,6 +51,7 @@ Image* Image::create(const char* path)
         return NULL;
     }
 
+#ifndef EMSCRIPTEN
     // Set up error handling (required without using custom error handlers above).
     if (setjmp(png_jmpbuf(png)))
     {
@@ -58,6 +59,7 @@ Image* Image::create(const char* path)
         png_destroy_read_struct(&png, &info, NULL);
         return NULL;
     }
+#endif // EMSCRIPTEN
 
     // Initialize file io.
     png_set_read_fn(png, stream.get(), readStream);
