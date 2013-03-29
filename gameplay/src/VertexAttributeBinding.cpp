@@ -259,17 +259,38 @@ void VertexAttributeBinding::bind()
         }
         else
         {
+#ifndef EMSCRIPTEN
+            // Vertex object bound in MeshBatch::updateVertexAttributeBinding.
+            // Do not clear it here.
             GL_ASSERT( glBindBuffer(GL_ARRAY_BUFFER, 0) );
+#endif // EMSCRIPTEN
         }
 
         GP_ASSERT(_attributes);
+
+#ifdef EMSCRIPTEN
+        VertexAttribute& a0 = _attributes[0];
+#endif // EMSCRIPTEN
+
         for (unsigned int i = 0; i < __maxVertexAttribs; ++i)
         {
             VertexAttribute& a = _attributes[i];
             if (a.enabled)
             {
+#ifdef EMSCRIPTEN
+
+                unsigned int offset = ((char*)a.pointer) - ((char*)a0.pointer);
+
+                GL_ASSERT( glVertexAttribPointer(i, a.size, a.type, a.normalized, a.stride, (const GLvoid *) offset) );
+
+#else
+
                 GL_ASSERT( glVertexAttribPointer(i, a.size, a.type, a.normalized, a.stride, a.pointer) );
+#endif // EMSCRIPTEN
+
                 GL_ASSERT( glEnableVertexAttribArray(i) );
+
+
             }
         }
     }
