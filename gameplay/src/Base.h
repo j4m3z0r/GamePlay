@@ -253,7 +253,7 @@ using std::va_list;
         #define GL_DEPTH24_STENCIL8 GL_DEPTH24_STENCIL8_OES
         #define glClearDepth glClearDepthf
         #define OPENGL_ES
-        #define USE_VAO
+        //#define USE_VAO
         #ifdef __arm__
             #define USE_NEON
         #endif
