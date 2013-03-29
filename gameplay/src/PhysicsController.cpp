@@ -429,18 +429,33 @@ btScalar PhysicsController::CollisionCallback::addSingleResult(btManifoldPoint& 
 
 void PhysicsController::initialize()
 {
+#ifdef EMSCRIPTEN
+    _collisionConfiguration = new btDefaultCollisionConfiguration();
+    _dispatcher = new btCollisionDispatcher(_collisionConfiguration);
+    _overlappingPairCache = new btDbvtBroadphase();
+    _solver = new btSequentialImpulseConstraintSolver();
+#else
     _collisionConfiguration = bullet_new<btDefaultCollisionConfiguration>();
     _dispatcher = bullet_new<btCollisionDispatcher>(_collisionConfiguration);
     _overlappingPairCache = bullet_new<btDbvtBroadphase>();
     _solver = bullet_new<btSequentialImpulseConstraintSolver>();
+#endif // EMSCRIPTEN
 
     // Create the world.
+#ifdef EMSCRIPTEN
+    _world = new btDiscreteDynamicsWorld(_dispatcher, _overlappingPairCache, _solver, _collisionConfiguration);
+#else
     _world = bullet_new<btDiscreteDynamicsWorld>(_dispatcher, _overlappingPairCache, _solver, _collisionConfiguration);
+#endif // EMSCRIPTEN
     _world->setGravity(BV(_gravity));
 
     // Register ghost pair callback so bullet detects collisions with ghost objects (used for character collisions).
     GP_ASSERT(_world->getPairCache());
+#ifdef EMSCRIPTEN
+    _ghostPairCallback = new btGhostPairCallback();
+#else
     _ghostPairCallback = bullet_new<btGhostPairCallback>();
+#endif // EMSCRIPTEN
     _world->getPairCache()->setInternalGhostPairCallback(_ghostPairCallback);
     _world->getDispatchInfo().m_allowedCcdPenetration = 0.0001f;
 
@@ -920,7 +935,11 @@ PhysicsCollisionShape* PhysicsController::createBox(const Vector3& extents, cons
     }
 
     // Create the box shape and add it to the cache.
+#ifdef EMSCRIPTEN
+    shape = new PhysicsCollisionShape(PhysicsCollisionShape::SHAPE_BOX, new btBoxShape(halfExtents));
+#else
     shape = new PhysicsCollisionShape(PhysicsCollisionShape::SHAPE_BOX, bullet_new<btBoxShape>(halfExtents));
+#endif // EMSCRIPTEN
     _shapes.push_back(shape);
 
     return shape;
@@ -957,7 +976,11 @@ PhysicsCollisionShape* PhysicsController::createSphere(float radius, const Vecto
     }
 
     // Create the sphere shape and add it to the cache.
+#ifdef EMSCRIPTEN
+    shape = new PhysicsCollisionShape(PhysicsCollisionShape::SHAPE_SPHERE, new btSphereShape(scaledRadius));
+#else
     shape = new PhysicsCollisionShape(PhysicsCollisionShape::SHAPE_SPHERE, bullet_new<btSphereShape>(scaledRadius));
+#endif // EMSCRIPTEN
     _shapes.push_back(shape);
 
     return shape;
@@ -990,7 +1013,11 @@ PhysicsCollisionShape* PhysicsController::createCapsule(float radius, float heig
     }
 
     // Create the capsule shape and add it to the cache.
+#ifdef EMSCRIPTEN
+    shape = new PhysicsCollisionShape(PhysicsCollisionShape::SHAPE_CAPSULE, new btCapsuleShape(scaledRadius, scaledHeight));
+#else
     shape = new PhysicsCollisionShape(PhysicsCollisionShape::SHAPE_CAPSULE, bullet_new<btCapsuleShape>(scaledRadius, scaledHeight));
+#endif // EMSCRIPTEN
     _shapes.push_back(shape);
 
     return shape;
@@ -1038,8 +1065,13 @@ PhysicsCollisionShape* PhysicsController::createHeightfield(Node* node, HeightFi
     heightfieldData->maxHeight = maxHeight;
 
     // Create the bullet terrain shape
+#ifdef EMSCRIPTEN
+    btHeightfieldTerrainShape* terrainShape = new btHeightfieldTerrainShape(
+        heightfield->getColumnCount(), heightfield->getRowCount(), heightfield->getArray(), 1.0f, minHeight, maxHeight, 1, PHY_FLOAT, false);
+#else
     btHeightfieldTerrainShape* terrainShape = bullet_new<btHeightfieldTerrainShape>(
         heightfield->getColumnCount(), heightfield->getRowCount(), heightfield->getArray(), 1.0f, minHeight, maxHeight, 1, PHY_FLOAT, false);
+#endif // EMSCRIPTEN
 
     // Set initial bullet local scaling for the heightfield
     terrainShape->setLocalScaling(BV(scale));
@@ -1116,7 +1148,11 @@ PhysicsCollisionShape* PhysicsController::createMesh(Mesh* mesh, const Vector3& 
         memcpy(&(shapeMeshData->vertexData[i * 3]), &v, sizeof(float) * 3);
     }
 
+#ifdef EMSCRIPTEN
+    btTriangleIndexVertexArray* meshInterface = new btTriangleIndexVertexArray();
+#else
     btTriangleIndexVertexArray* meshInterface = bullet_new<btTriangleIndexVertexArray>();
+#endif // EMSCRIPTEN
 
     size_t partCount = data->parts.size();
     if (partCount > 0)
@@ -1198,8 +1234,13 @@ PhysicsCollisionShape* PhysicsController::createMesh(Mesh* mesh, const Vector3& 
     }
 
     // Create our collision shape object and store shapeMeshData in it.
+#ifdef EMSCRIPTEN
+    PhysicsCollisionShape* shape =
+        new PhysicsCollisionShape(PhysicsCollisionShape::SHAPE_MESH, new btBvhTriangleMeshShape(meshInterface, true), meshInterface);
+#else
     PhysicsCollisionShape* shape =
         new PhysicsCollisionShape(PhysicsCollisionShape::SHAPE_MESH, bullet_new<btBvhTriangleMeshShape>(meshInterface, true), meshInterface);
+#endif // EMSCRIPTEN
     shape->_shapeData.meshData = shapeMeshData;
 
     _shapes.push_back(shape);
