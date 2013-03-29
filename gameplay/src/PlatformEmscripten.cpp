@@ -1,6 +1,13 @@
 #ifdef EMSCRIPTEN
 
 #include <emscripten/emscripten.h>
+
+#ifdef USE_VAO
+// Emscripten tests use SDL's proxy to eglGetProcAddress for totally mysterious
+// reasons. We duplicate the pattern here, so need SDL's include file.
+#include "SDL/SDL.h"
+#endif
+
 #include <sys/time.h>
 
 #include "Base.h"
@@ -110,7 +117,6 @@ static int getRotation()
 // Initialized EGL resources.
 static bool initEGL()
 {
-    printf("Running initGL\n");
     int samples = 0;
     Properties* config = Game::getInstance()->getConfig()->getNamespace("window", true);
     if (config)
@@ -243,8 +249,6 @@ static bool initEGL()
         goto error;
     }
     
-    printf("initGL: width, height = %d, %d\n", __width, __height);
-
     __orientationAngle = getRotation() * 90;
     
     // Set vsync.
@@ -252,22 +256,20 @@ static bool initEGL()
     
     // Initialize OpenGL ES extensions.
     __glExtensions = (const char*)glGetString(GL_EXTENSIONS);
-    printf("GL Extensions: %s\n", __glExtensions);
-    
-    if (strstr(__glExtensions, "GL_OES_vertex_array_object") || strstr(__glExtensions, "GL_ARB_vertex_array_object"))
+
+#ifdef USE_VAO
+    if (strstr(__glExtensions, "OES_vertex_array_object"))
     {
-        printf("Disabling VAO extension\n");
         // Disable VAO extension for now.
-        glBindVertexArray = (PFNGLBINDVERTEXARRAYOESPROC)eglGetProcAddress("glBindVertexArrayOES");
-        glDeleteVertexArrays = (PFNGLDELETEVERTEXARRAYSOESPROC)eglGetProcAddress("glDeleteVertexArrays");
-        glGenVertexArrays = (PFNGLGENVERTEXARRAYSOESPROC)eglGetProcAddress("glGenVertexArraysOES");
-        glIsVertexArray = (PFNGLISVERTEXARRAYOESPROC)eglGetProcAddress("glIsVertexArrayOES");
+        glBindVertexArray = (PFNGLBINDVERTEXARRAYOESPROC)SDL_GL_GetProcAddress("glBindVertexArray");
+        glDeleteVertexArrays = (PFNGLDELETEVERTEXARRAYSOESPROC)SDL_GL_GetProcAddress("glDeleteVertexArrays");
+        glGenVertexArrays = (PFNGLGENVERTEXARRAYSOESPROC)SDL_GL_GetProcAddress("glGenVertexArrays");
+        //glIsVertexArray = (PFNGLISVERTEXARRAYOESPROC)eglGetProcAddress("glIsVertexArrayOES");
     }
-    printf("initEGL() successful\n");
+#endif // USE_VAO
     return true;
     
 error:
-    printf("initEGL() unsuccessful!\n");
     return false;
 }
 
@@ -664,16 +666,13 @@ static Game *self_game;
 
 extern "C" void main_loop_iter(void)
 {
-    printf("Starting main_loop_iter\n");
     // WebGL swaps buffers each time control is returned to the UI thread. No
     // need to explicitly swap.
     self_game->frame();
-    printf("main_loop_iter finished\n");
 }
 
 int Platform::enterMessagePump()
 {
-    printf("Entering Message Pump\n");
     // Set nasty global pointers to this so that emscripten_set_main_loop has a
     // pointer to work with.
     self = this;
@@ -694,7 +693,7 @@ int Platform::enterMessagePump()
     __timeAbsolute = 0L;
 
     // Code after here won't ever run as emscripten main loops never end.
-    emscripten_set_main_loop(&main_loop_iter, 1, 1);
+    emscripten_set_main_loop(&main_loop_iter, 0, 1);
 
     Game::getInstance()->exit();
     destroyEGLMain();
