@@ -1,4 +1,9 @@
-EMCC_FLAGS:=-s FULL_ES2=1 -g -D_DEBUG --jcache
+#EMCC_FLAGS:=-s FULL_ES2=1 -g -D_DEBUG --jcache
+#EMCC_FLAGS:=-D_DEBUG --jcache -s GL_DEBUG=1 -s GL_UNSAFE_OPTS=0 -O2 --closure 0
+#EMCC_FLAGS:=-O0 -D_DEBUG --jcache -s GL_DEBUG=1 -s GL_UNSAFE_OPTS=0
+#EMCC_FLAGS:=-O0 -D_DEBUG --jcache -s GL_UNSAFE_OPTS=0
+#EMCC_FLAGS:=-O0 --jcache -s GL_UNSAFE_OPTS=0
+EMCC_FLAGS:=-O1 --jcache -s GL_UNSAFE_OPTS=0
 
 EMCC:=emscripten/emcc
 
@@ -266,6 +271,5 @@ TO_CLEAN := \
 
 clean:
 	rm -f $(INTERMEDIATE_OBJECTS) $(TO_CLEAN)
-	$(EMCC) --clear-cache
 
 
