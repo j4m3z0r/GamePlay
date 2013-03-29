@@ -150,6 +150,14 @@ private:
     unsigned short* _indices;
     unsigned short* _indicesPtr;
 
+#ifdef EMSCRIPTEN
+    GLuint _vertexDataObject;
+    GLuint _vertexDataObjectSize;
+
+    GLuint _indexDataObject;
+    GLuint _indexDataObjectSize;
+#endif // EMSCRIPTEN
+
 };
 
 }
