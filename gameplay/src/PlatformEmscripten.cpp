@@ -18,6 +18,25 @@
 #include "ScriptController.h"
 #include <unistd.h>
 
+// Emscripten's GLUT includes have definitions that conflict with the OpenGL
+// ones. Instead, just add the declarations we need to use GLUT's input
+// controls. Note that Emscripten's GLUT implementation just pulls
+// Module.canvas and window references directly, so there is no need for us to
+// ensure that GLUT is correctly wired up to the OpenGL contexts, etc. Method
+// definitions taken from opengl.org docs.
+extern "C" {
+void glutInit(int *argcp, char **argv);
+void glutMouseFunc(void (*func)(int button, int state, int x, int y));
+void glutMotionFunc(void (*func)(int x, int y));
+void glutPassiveMotionFunc(void (*func)(int x, int y));
+void mouseCB(int button, int state, int x, int y);
+void motionCB(int x, int y);
+}
+
+// Constants for mouse events (inferred from experiment)
+static const int glutLeftButton = 0;
+static const int glutMouseDown = 0;
+static const int glutMouseUp = 1;
 // Externally referenced global variables.
 
 static bool __initialized;
@@ -117,6 +136,22 @@ static int getRotation()
 // Initialized EGL resources.
 static bool initEGL()
 {
+    // Use GLUT for mouse and key events
+
+    // Construct a fake argv array for GLUT. LLVM seems extra picky about what
+    // it will accept here, so we allocate a "real" argv array on the heap, and
+    // tear it down after init.
+    char *arg1 = (char*)malloc(1);
+    char **dummyArgv = (char**)malloc(sizeof(char*));
+    dummyArgv[0] = arg1;
+    glutInit(0, dummyArgv);
+    free(dummyArgv[0]);
+    free(dummyArgv);
+
+    glutMouseFunc(&mouseCB);
+    glutMotionFunc(&motionCB);
+    glutPassiveMotionFunc(&motionCB);
+
     int samples = 0;
     Properties* config = Game::getInstance()->getConfig()->getNamespace("window", true);
     if (config)
@@ -267,10 +302,76 @@ static bool initEGL()
         //glIsVertexArray = (PFNGLISVERTEXARRAYOESPROC)eglGetProcAddress("glIsVertexArrayOES");
     }
 #endif // USE_VAO
+
     return true;
     
 error:
     return false;
+}
+
+extern "C" void motionCB(int x, int y)
+{
+    // FIXME: Get width and height properly.
+    if(x < 0 || y < 0 || x > __width || y > __height)
+    {
+        return;
+    }
+
+    if(!gameplay::Platform::mouseEventInternal(gameplay::Mouse::MOUSE_MOVE, x, y, 0))
+    {
+        if(__pointer0.pressed)
+        {
+            gameplay::Platform::touchEventInternal(gameplay::Touch::TOUCH_MOVE, x, y, 0);
+        }
+    }
+}
+
+extern "C" void mouseCB(int button, int state, int x, int y)
+{
+    gameplay::Mouse::MouseEvent evt;
+    if(button != glutLeftButton)
+    {
+        return;
+    }
+
+    // FIXME: Get width and height properly.
+    if(x < 0 || y < 0 || x > __width || y > __height)
+    {
+        return;
+    }
+
+    if(state == glutMouseDown)
+    {
+        __pointer0.pressed = true;
+        evt = gameplay::Mouse::MOUSE_PRESS_LEFT_BUTTON;
+    }
+    else if(state == glutMouseUp)
+    {
+        __pointer0.pressed = false;
+        evt = gameplay::Mouse::MOUSE_RELEASE_LEFT_BUTTON;
+    }
+    else
+    {
+        return;
+    }
+
+    if(!gameplay::Platform::mouseEventInternal(evt, x, y, 0))
+    {
+        if(state == glutMouseDown)
+        {
+            gameplay::Platform::touchEventInternal(gameplay::Touch::TOUCH_PRESS, x, y, 0);
+        }
+        else if(state == glutMouseUp)
+        {
+            gameplay::Platform::touchEventInternal(gameplay::Touch::TOUCH_RELEASE, x, y, 0);
+        }
+        else
+        {
+            return;
+        }
+    }
+
+    // TODO: Handle touch events.
 }
 
 static void destroyEGLSurface()
@@ -698,6 +799,8 @@ int Platform::enterMessagePump()
     Game::getInstance()->exit();
     destroyEGLMain();
     __initialized = false;
+
+    return true;
 }
 
 void Platform::signalShutdown() 
@@ -712,13 +815,11 @@ bool Platform::canExit()
    
 unsigned int Platform::getDisplayWidth()
 {
-    return 800;
     return __width;
 }
     
 unsigned int Platform::getDisplayHeight()
 {
-    return 600;
     return __height;
 }
     
@@ -773,7 +874,7 @@ bool Platform::isMultiTouch()
 bool Platform::hasMouse()
 {
     // not supported
-    return false;
+    return true;
 }
 
 void Platform::setMouseCaptured(bool captured)
