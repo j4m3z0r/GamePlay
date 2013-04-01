@@ -7,7 +7,8 @@ EMCC_FLAGS:=-O1 --jcache -s GL_UNSAFE_OPTS=0
 EMCC:=externals/emscripten/emcc
 
 SAMPLES := \
-	gameplay-samples/sample04-particles/dist/index.html
+	gameplay-samples/sample04-particles/dist/index.html \
+	gameplay-samples/sample06-racer/dist/index.html
 
 all: $(SAMPLES)
 
@@ -46,12 +47,19 @@ clean:
 	make -C gameplay -f EMMakefile clean
 	rm -rf gameplay-samples/sample04-particles/dist
 
-.PHONY: $(INTERMEDIATE_OBJECTS) clean gameplay-samples/sample04-particles/dist/index.data
+.PHONY: \
+	$(INTERMEDIATE_OBJECTS) \
+	clean \
+	gameplay-samples/sample04-particles/dist/index.data \
+	gameplay-samples/sample06-racer/dist/index.data
 
 # XXX: Build samples from toplevel makefile for now, as this has the paths to
 # all the libs that need to be linked in. Structure for all these is that there
 # is a step to package up all the files that the app needs at runtime, and a
 # step to compile the app and link in all the libraries.
+
+
+# Particles Demo
 gameplay-samples/sample04-particles/dist/index.data:
 	(cd gameplay-samples/sample04-particles; \
     mkdir -p dist; \
@@ -74,4 +82,28 @@ gameplay-samples/sample04-particles/dist/index.html: $(INTERMEDIATE_OBJECTS) gam
 		$(INTERMEDIATE_OBJECTS)
 	# Hack to set the canvas to the appropriate size.
 	perl -i -pe 's/id="canvas"/width="800" height="600" id="canvas"/' gameplay-samples/sample04-particles/dist/index.html
+
+# Racer demo
+gameplay-samples/sample06-racer/dist/index.data:
+	(cd gameplay-samples/sample06-racer; \
+    mkdir -p dist; \
+    python ../../externals/emscripten/tools/file_packager.py index.data --preload game.config --preload res --pre-run > dist/preload.js; \
+    mv index.data dist)
+
+gameplay-samples/sample06-racer/dist/index.html: $(INTERMEDIATE_OBJECTS) gameplay-samples/sample06-racer/src/RacerGame.cpp gameplay-samples/sample06-racer/dist/index.data
+	mkdir -p gameplay-samples/sample06-racer/dist
+	$(EMCC) $(EMCC_FLAGS) \
+		-o gameplay-samples/sample06-racer/dist/index.html \
+		--pre-js gameplay-samples/sample06-racer/dist/preload.js \
+		-Iexternals/libpng-1.4.8/ \
+		-Iexternals/lua-5.2.1/src/ \
+		-Igameplay/src \
+		-Iexternals/bullet-2.81-rev2613/src \
+		-Iexternals/fakeogg/ \
+		-Iexternal-deps/oggvorbis/include/ \
+		-Iexternals/emscripten/system/include/ \
+		gameplay-samples/sample06-racer/src/RacerGame.cpp \
+		$(INTERMEDIATE_OBJECTS)
+	# Hack to set the canvas to the appropriate size.
+	perl -i -pe 's/id="canvas"/width="800" height="600" id="canvas"/' gameplay-samples/sample06-racer/dist/index.html
 
