@@ -317,6 +317,7 @@ extern "C" void motionCB(int x, int y)
         return;
     }
 
+    // FIXME: Something weird here with touch handling.
     if(!gameplay::Platform::mouseEventInternal(gameplay::Mouse::MOUSE_MOVE, x, y, 0))
     {
         if(__pointer0.pressed)
