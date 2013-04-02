@@ -56,6 +56,8 @@ static int __height = 600;
 static double __timeStart;
 static double __timeAbsolute;
 static bool __vsync = WINDOW_VSYNC;
+static float __pitch;
+static float __roll;
 static int __orientationAngle = 90;
 static bool __multiTouch = false;
 static int __primaryTouchId = -1;
@@ -694,6 +696,15 @@ bool Platform::isMultiTouch()
     return __multiTouch;
 }
 
+void Platform::getAccelerometerValues(float* pitch, float* roll)
+{
+    GP_ASSERT(pitch);
+    GP_ASSERT(roll);
+
+    *pitch = __pitch;
+    *roll = __roll;
+}
+
 bool Platform::hasMouse()
 {
     // not supported
@@ -828,6 +839,10 @@ void Platform::pollGamepadState(Gamepad* gamepad)
 {
 }
 
+bool Platform::launchURL(const char* url)
+{
+    return false;
+}
 
 }
 
