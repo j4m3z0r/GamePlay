@@ -17,9 +17,11 @@ INTERMEDIATE_OBJECTS := \
 	externals/liblua.bc \
 	externals/libz.bc \
 	externals/libpng.bc \
-	externals/libfakeal.bc \
+	externals/libvorbis.bc \
 	gameplay/libgameplay.bc \
 	gameplay/libgphacked.bc
+
+#	externals/libfakeal.bc \
 
 externals/libbullet.bc:
 	make -C externals -f EMMakefile libbullet.bc -j 4
@@ -33,8 +35,11 @@ externals/libz.bc:
 externals/libpng.bc:
 	make -C externals -f EMMakefile libpng.bc -j 4
 
-externals/libfakeal.bc:
-	make -C externals -f EMMakefile libfakeal.bc -j 4
+externals/libvorbis.bc:
+	make -C externals -f EMMakefile libvorbis.bc -j 4
+
+#externals/libfakeal.bc:
+#	make -C externals -f EMMakefile libfakeal.bc -j 4
 
 gameplay/libgameplay.bc:
 	make -C gameplay -f EMMakefile libgameplay.bc -j 4
@@ -86,6 +91,7 @@ gameplay-samples/sample04-particles/dist/index.html: $(INTERMEDIATE_OBJECTS) gam
 # Racer demo
 gameplay-samples/sample06-racer/dist/index.data:
 	(cd gameplay-samples/sample06-racer; \
+	cp game.png.config game.config; \
     mkdir -p dist; \
     python ../../externals/emscripten/tools/file_packager.py index.data --preload game.config --preload res --pre-run > dist/preload.js; \
     mv index.data dist)
@@ -93,6 +99,7 @@ gameplay-samples/sample06-racer/dist/index.data:
 gameplay-samples/sample06-racer/dist/index.html: $(INTERMEDIATE_OBJECTS) gameplay-samples/sample06-racer/src/RacerGame.cpp gameplay-samples/sample06-racer/dist/index.data
 	mkdir -p gameplay-samples/sample06-racer/dist
 	$(EMCC) $(EMCC_FLAGS) \
+		-s TOTAL_MEMORY=33554432 \
 		-o gameplay-samples/sample06-racer/dist/index.html \
 		--pre-js gameplay-samples/sample06-racer/dist/preload.js \
 		-Iexternals/libpng-1.4.8/ \

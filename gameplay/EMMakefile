@@ -37,7 +37,6 @@ GAMEPLAY_OBJECTS := \
 	src/Effect.bc \
 	src/FileSystem.bc \
 	src/FlowLayout.bc \
-	src/Form.bc \
 	src/FrameBuffer.bc \
 	src/Frustum.bc \
 	src/Gamepad.bc \
@@ -106,6 +105,7 @@ GAMEPLAY_OBJECTS := \
 GP_HACKED_OBJECTS := \
 	src/VertexAttributeBinding.bc \
 	src/Bundle.bc \
+	src/Form.bc \
 	src/Font.bc \
 	src/ScreenDisplayer.bc \
 	src/SpriteBatch.bc \

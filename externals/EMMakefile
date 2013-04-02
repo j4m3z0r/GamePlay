@@ -227,15 +227,42 @@ BULLET_OBJECTS := \
 	bullet-2.81-rev2613/src//MiniCL/MiniCLTask/MiniCLTask.bc \
 	bullet-2.81-rev2613/src//MiniCL/MiniCLTaskScheduler.bc
 
-FAKE_AL_OBJECTS := \
-	fakeal/AL/fakeal.bc
+# Note: we include 2 source files from libogg here.
+VORBIS_OBJECTS := \
+	libvorbis-1.3.3/lib/analysis.bc \
+	libvorbis-1.3.3/lib/bitrate.bc \
+	libvorbis-1.3.3/lib/block.bc \
+	libvorbis-1.3.3/lib/codebook.bc \
+	libvorbis-1.3.3/lib/envelope.bc \
+	libvorbis-1.3.3/lib/floor0.bc \
+	libvorbis-1.3.3/lib/floor1.bc \
+	libvorbis-1.3.3/lib/info.bc \
+	libvorbis-1.3.3/lib/lookup.bc \
+	libvorbis-1.3.3/lib/lpc.bc \
+	libvorbis-1.3.3/lib/lsp.bc \
+	libvorbis-1.3.3/lib/mapping0.bc \
+	libvorbis-1.3.3/lib/mdct.bc \
+	libvorbis-1.3.3/lib/psy.bc \
+	libvorbis-1.3.3/lib/registry.bc \
+	libvorbis-1.3.3/lib/res0.bc \
+	libvorbis-1.3.3/lib/smallft.bc \
+	libvorbis-1.3.3/lib/synthesis.bc \
+	libvorbis-1.3.3/lib/vorbisenc.bc \
+	libvorbis-1.3.3/lib/vorbisfile.bc \
+	libvorbis-1.3.3/lib/window.bc \
+	libogg-1.3.0/src/bitwise.bc \
+	libogg-1.3.0/src/framing.bc
+
+#FAKE_AL_OBJECTS := \
+#	fakeal/AL/fakeal.bc
 
 INTERMEDIATE_OBJECTS := \
 	libbullet.bc \
 	liblua.bc \
 	libz.bc \
 	libpng.bc \
-	libfakeal.bc
+	libvorbis.bc
+#	libfakeal.bc
 
 all: $(INTERMEDIATE_OBJECTS)
 
@@ -251,15 +278,19 @@ libz.bc: $(ZLIB_OBJECTS)
 libpng.bc: $(LIBPNG_OBJECTS)
 	$(EMCC) $(EMCC_FLAGS) $(LIBPNG_OBJECTS) -o libpng.bc
 
-libfakeal.bc: $(FAKE_AL_OBJECTS)
-	$(EMCC) $(EMCC_FLAGS) $(FAKE_AL_OBJECTS) -o libfakeal.bc
+libvorbis.bc: $(VORBIS_OBJECTS)
+	$(EMCC) $(EMCC_FLAGS) $(VORBIS_OBJECTS) -o libvorbis.bc
+
+#libfakeal.bc: $(FAKE_AL_OBJECTS)
+#	$(EMCC) $(EMCC_FLAGS) $(FAKE_AL_OBJECTS) -o libfakeal.bc
 
 TO_CLEAN := \
 	$(BULLET_OBJECTS) \
 	$(LUA_OBJECTS) \
 	$(ZLIB_OBJECTS) \
 	$(LIBPNG_OBJECTS) \
-	$(FAKE_AL_OBJECTS)
+	$(VORBIS_OBJECTS)
+#	$(FAKE_AL_OBJECTS)
 
 # XXX: Slightly hacky including all the -I flags for all projects, but doesn't
 # seem to break anything.
@@ -267,7 +298,7 @@ TO_CLEAN := \
 	$(EMCC) -c -Iemscripten/system/include/ -Ilibpng-1.4.8/ -Ilua-5.2.1/src/ -Ibullet-2.81-rev2613/src $(EMCC_FLAGS) -o $@ $<
 
 %.bc: %.c
-	$(EMCC) -c $(EMCC_FLAGS) -o $@ $<
+	$(EMCC) -Ifakeogg -Ilibvorbis-1.3.3/lib -Ilibvorbis-1.3.3/include -Ilibogg-1.3.0/include -c $(EMCC_FLAGS) -o $@ $<
 
 clean:
 	rm -f $(INTERMEDIATE_OBJECTS) $(TO_CLEAN)
