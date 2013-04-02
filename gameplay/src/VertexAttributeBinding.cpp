@@ -269,6 +269,7 @@ void VertexAttributeBinding::bind()
         GP_ASSERT(_attributes);
 
 #ifdef EMSCRIPTEN
+        // Establish which VA has the lowest pointer value, as all others will be offsets from there.
         VertexAttribute& a0 = _attributes[0];
 #endif // EMSCRIPTEN
 
@@ -279,7 +280,18 @@ void VertexAttributeBinding::bind()
             {
 #ifdef EMSCRIPTEN
 
-                unsigned int offset = ((char*)a.pointer) - ((char*)a0.pointer);
+                int offset = ((char*)a.pointer) - ((char*) a0.pointer);
+
+                // XXX: This is almost certainly wrong, however for the time
+                // being it stops GL warnings hitting the browser and slowing
+                // us down to 2-3 FPS. Not sure what the right way to handle
+                // this case is; perhaps games need to be modified to format
+                // data in ascending order.
+
+                // XXX: Seems to be the 'track' texture on the racer demo that
+                // trips this up, which is a "light map texture". Suspect the
+                // issue may be there.
+                if(offset < 0) offset = 0;
 
                 GL_ASSERT( glVertexAttribPointer(i, a.size, a.type, a.normalized, a.stride, (const GLvoid *) offset) );
 
