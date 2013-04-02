@@ -119,6 +119,9 @@ AudioBuffer* AudioBuffer::create(const char* path)
     }
     else if (memcmp(header, "OggS", 4) == 0)
     {
+#ifdef EMSCRIPTEN
+        GP_ERROR("Emscripten built GamePlay cannot open .ogg files. Convert to .wav (%s)", path);
+#endif // EMSCRIPTEN
         if (!AudioBuffer::loadOgg(stream.get(), alBuffer))
         {
             GP_ERROR("Invalid ogg file: %s", path);
