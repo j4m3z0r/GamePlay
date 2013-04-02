@@ -83,9 +83,12 @@ void RacerGame::initialize()
         _carVehicle = static_cast<PhysicsVehicle*>(carNode->getCollisionObject());
         resetToStart();
     }
-
     // Create audio tracks
+#ifdef EMSCRIPTEN
+    _backgroundSound = AudioSource::create("res/common/background_track.wav");
+#else
     _backgroundSound = AudioSource::create("res/common/background_track.ogg");
+#endif // EMSCRIPTEN
     if (_backgroundSound)
     {
         _backgroundSound->setLooped(true);
@@ -93,7 +96,11 @@ void RacerGame::initialize()
         _backgroundSound->setGain(0.3f);
     }
 
+#ifdef EMSCRIPTEN
+    _engineSound = AudioSource::create("res/common/engine_loop.wav");
+#else
     _engineSound = AudioSource::create("res/common/engine_loop.ogg");
+#endif // EMSCRIPTEN
     if (_engineSound)
     {
         _engineSound->setLooped(true);
@@ -241,7 +248,6 @@ void RacerGame::update(float elapsedTime)
                 {
                     driving = -0.6f;
                 }
-
                 if ( (_keyFlags & BRAKE) || (_keyFlags & BRAKE_MOUSE) || _gamepad->isButtonDown(Gamepad::BUTTON_B))
                 {
                     braking = 1;
