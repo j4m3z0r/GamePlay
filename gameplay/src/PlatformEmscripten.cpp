@@ -29,8 +29,11 @@ void glutInit(int *argcp, char **argv);
 void glutMouseFunc(void (*func)(int button, int state, int x, int y));
 void glutMotionFunc(void (*func)(int x, int y));
 void glutPassiveMotionFunc(void (*func)(int x, int y));
+void glutKeyboardFunc(void (*func)(unsigned char key, int x, int y));
+
 void mouseCB(int button, int state, int x, int y);
 void motionCB(int x, int y);
+void keyboardCB(unsigned char key, int x, int y);
 }
 
 // Constants for mouse events (inferred from experiment)
@@ -151,6 +154,7 @@ static bool initEGL()
     glutMouseFunc(&mouseCB);
     glutMotionFunc(&motionCB);
     glutPassiveMotionFunc(&motionCB);
+    glutKeyboardFunc(&keyboardCB);
 
     int samples = 0;
     Properties* config = Game::getInstance()->getConfig()->getNamespace("window", true);
@@ -406,344 +410,152 @@ static void destroyEGLMain()
     }
 }
 
-// Gets the Keyboard::Key enumeration constant that corresponds to the given Android key code.
-static Keyboard::Key getKey(int keycode, int metastate)
+// Gets the Keyboard::Key enumeration constant that corresponds to the given GLUT key code.
+static Keyboard::Key getKey(unsigned char keycode)
 {
     switch(keycode) 
     {
-        case 0x0A:
-            return Keyboard::KEY_RETURN;
-        case 0x20:
-            return Keyboard::KEY_SPACE;
+        case 0x0A: return Keyboard::KEY_RETURN;
+        case 0x20: return Keyboard::KEY_SPACE;
             
-        case 0x30:
-            return Keyboard::KEY_ZERO;
-        case 0x31:
-            return Keyboard::KEY_ONE;
-        case 0x32:
-            return Keyboard::KEY_TWO;
-        case 0x33:
-            return Keyboard::KEY_THREE;
-        case 0x34:
-            return Keyboard::KEY_FOUR;
-        case 0x35:
-            return Keyboard::KEY_FIVE;
-        case 0x36:
-            return Keyboard::KEY_SIX;
-        case 0x37:
-            return Keyboard::KEY_SEVEN;
-        case 0x38:
-            return Keyboard::KEY_EIGHT;
-        case 0x39:
-            return Keyboard::KEY_NINE;
+        case '0': return Keyboard::KEY_ZERO;
+        case '1': return Keyboard::KEY_ONE;
+        case '2': return Keyboard::KEY_TWO;
+        case '3': return Keyboard::KEY_THREE;
+        case '4': return Keyboard::KEY_FOUR;
+        case '5': return Keyboard::KEY_FIVE;
+        case '6': return Keyboard::KEY_SIX;
+        case '7': return Keyboard::KEY_SEVEN;
+        case '8': return Keyboard::KEY_EIGHT;
+        case '9': return Keyboard::KEY_NINE;
             
-        case 0x41:
-            return Keyboard::KEY_CAPITAL_A;
-        case 0x42:
-            return Keyboard::KEY_CAPITAL_B;
-        case 0x43:
-            return Keyboard::KEY_CAPITAL_C;
-        case 0x44:
-            return Keyboard::KEY_CAPITAL_D;
-        case 0x45:
-            return Keyboard::KEY_CAPITAL_E;
-        case 0x46:
-            return Keyboard::KEY_CAPITAL_F;
-        case 0x47:
-            return Keyboard::KEY_CAPITAL_G;
-        case 0x48:
-            return Keyboard::KEY_CAPITAL_H;
-        case 0x49:
-            return Keyboard::KEY_CAPITAL_I;
-        case 0x4A:
-            return Keyboard::KEY_CAPITAL_J;
-        case 0x4B:
-            return Keyboard::KEY_CAPITAL_K;
-        case 0x4C:
-            return Keyboard::KEY_CAPITAL_L;
-        case 0x4D:
-            return Keyboard::KEY_CAPITAL_M;
-        case 0x4E:
-            return Keyboard::KEY_CAPITAL_N;
-        case 0x4F:
-            return Keyboard::KEY_CAPITAL_O;
-        case 0x50:
-            return Keyboard::KEY_CAPITAL_P;
-        case 0x51:
-            return Keyboard::KEY_CAPITAL_Q;
-        case 0x52:
-            return Keyboard::KEY_CAPITAL_R;
-        case 0x53:
-            return Keyboard::KEY_CAPITAL_S;
-        case 0x54:
-            return Keyboard::KEY_CAPITAL_T;
-        case 0x55:
-            return Keyboard::KEY_CAPITAL_U;
-        case 0x56:
-            return Keyboard::KEY_CAPITAL_V;
-        case 0x57:
-            return Keyboard::KEY_CAPITAL_W;
-        case 0x58:
-            return Keyboard::KEY_CAPITAL_X;
-        case 0x59:
-            return Keyboard::KEY_CAPITAL_Y;
-        case 0x5A:
-            return Keyboard::KEY_CAPITAL_Z;
+        case 'A': return Keyboard::KEY_CAPITAL_A;
+        case 'B': return Keyboard::KEY_CAPITAL_B;
+        case 'C': return Keyboard::KEY_CAPITAL_C;
+        case 'D': return Keyboard::KEY_CAPITAL_D;
+        case 'E': return Keyboard::KEY_CAPITAL_E;
+        case 'F': return Keyboard::KEY_CAPITAL_F;
+        case 'G': return Keyboard::KEY_CAPITAL_G;
+        case 'H': return Keyboard::KEY_CAPITAL_H;
+        case 'I': return Keyboard::KEY_CAPITAL_I;
+        case 'J': return Keyboard::KEY_CAPITAL_J;
+        case 'K': return Keyboard::KEY_CAPITAL_K;
+        case 'L': return Keyboard::KEY_CAPITAL_L;
+        case 'M': return Keyboard::KEY_CAPITAL_M;
+        case 'N': return Keyboard::KEY_CAPITAL_N;
+        case 'O': return Keyboard::KEY_CAPITAL_O;
+        case 'P': return Keyboard::KEY_CAPITAL_P;
+        case 'Q': return Keyboard::KEY_CAPITAL_Q;
+        case 'R': return Keyboard::KEY_CAPITAL_R;
+        case 'S': return Keyboard::KEY_CAPITAL_S;
+        case 'T': return Keyboard::KEY_CAPITAL_T;
+        case 'U': return Keyboard::KEY_CAPITAL_U;
+        case 'V': return Keyboard::KEY_CAPITAL_V;
+        case 'W': return Keyboard::KEY_CAPITAL_W;
+        case 'X': return Keyboard::KEY_CAPITAL_X;
+        case 'Y': return Keyboard::KEY_CAPITAL_Y;
+        case 'Z': return Keyboard::KEY_CAPITAL_Z;
             
             
-        case 0x61:
-            return Keyboard::KEY_A;
-        case 0x62:
-            return Keyboard::KEY_B;
-        case 0x63:
-            return Keyboard::KEY_C;
-        case 0x64:
-            return Keyboard::KEY_D;
-        case 0x65:
-            return Keyboard::KEY_E;
-        case 0x66:
-            return Keyboard::KEY_F;
-        case 0x67:
-            return Keyboard::KEY_G;
-        case 0x68:
-            return Keyboard::KEY_H;
-        case 0x69:
-            return Keyboard::KEY_I;
-        case 0x6A:
-            return Keyboard::KEY_J;
-        case 0x6B:
-            return Keyboard::KEY_K;
-        case 0x6C:
-            return Keyboard::KEY_L;
-        case 0x6D:
-            return Keyboard::KEY_M;
-        case 0x6E:
-            return Keyboard::KEY_N;
-        case 0x6F:
-            return Keyboard::KEY_O;
-        case 0x70:
-            return Keyboard::KEY_P;
-        case 0x71:
-            return Keyboard::KEY_Q;
-        case 0x72:
-            return Keyboard::KEY_R;
-        case 0x73:
-            return Keyboard::KEY_S;
-        case 0x74:
-            return Keyboard::KEY_T;
-        case 0x75:
-            return Keyboard::KEY_U;
-        case 0x76:
-            return Keyboard::KEY_V;
-        case 0x77:
-            return Keyboard::KEY_W;
-        case 0x78:
-            return Keyboard::KEY_X;
-        case 0x79:
-            return Keyboard::KEY_Y;
-        case 0x7A:
-            return Keyboard::KEY_Z;
-        default:
-            break;
+        case 'a': return Keyboard::KEY_A;
+        case 'b': return Keyboard::KEY_B;
+        case 'c': return Keyboard::KEY_C;
+        case 'd': return Keyboard::KEY_D;
+        case 'e': return Keyboard::KEY_E;
+        case 'f': return Keyboard::KEY_F;
+        case 'g': return Keyboard::KEY_G;
+        case 'h': return Keyboard::KEY_H;
+        case 'i': return Keyboard::KEY_I;
+        case 'j': return Keyboard::KEY_J;
+        case 'k': return Keyboard::KEY_K;
+        case 'l': return Keyboard::KEY_L;
+        case 'm': return Keyboard::KEY_M;
+        case 'n': return Keyboard::KEY_N;
+        case 'o': return Keyboard::KEY_O;
+        case 'p': return Keyboard::KEY_P;
+        case 'q': return Keyboard::KEY_Q;
+        case 'r': return Keyboard::KEY_R;
+        case 's': return Keyboard::KEY_S;
+        case 't': return Keyboard::KEY_T;
+        case 'u': return Keyboard::KEY_U;
+        case 'v': return Keyboard::KEY_V;
+        case 'w': return Keyboard::KEY_W;
+        case 'x': return Keyboard::KEY_X;
+        case 'y': return Keyboard::KEY_Y;
+        case 'z': return Keyboard::KEY_Z;
+        default: break;
             
        // Symbol Row 3
-        case 0x2E:
-            return Keyboard::KEY_PERIOD;
-        case 0x2C:
-            return Keyboard::KEY_COMMA;
-        case 0x3F:
-            return Keyboard::KEY_QUESTION;
-        case 0x21:
-            return Keyboard::KEY_EXCLAM;
-        case 0x27:
-            return Keyboard::KEY_APOSTROPHE;
+        case '.': return Keyboard::KEY_PERIOD;
+        case ',': return Keyboard::KEY_COMMA;
+        case '?': return Keyboard::KEY_QUESTION;
+        case '!': return Keyboard::KEY_EXCLAM;
+        case '\'': return Keyboard::KEY_APOSTROPHE;
             
         // Symbols Row 2
-        case 0x2D:
-            return Keyboard::KEY_MINUS;
-        case 0x2F:
-            return Keyboard::KEY_SLASH;
-        case 0x3A:
-            return Keyboard::KEY_COLON;
-        case 0x3B:
-            return Keyboard::KEY_SEMICOLON;
-        case 0x28:
-            return Keyboard::KEY_LEFT_PARENTHESIS;
-        case 0x29:
-            return Keyboard::KEY_RIGHT_PARENTHESIS;
-        case 0x24:
-            return Keyboard::KEY_DOLLAR;
-        case 0x26:
-            return Keyboard::KEY_AMPERSAND;
-        case 0x40:
-            return Keyboard::KEY_AT;
-        case 0x22:
-            return Keyboard::KEY_QUOTE;
+        case '-': return Keyboard::KEY_MINUS;
+        case '/': return Keyboard::KEY_SLASH;
+        case ':': return Keyboard::KEY_COLON;
+        case ';': return Keyboard::KEY_SEMICOLON;
+        case '(': return Keyboard::KEY_LEFT_PARENTHESIS;
+        case ')': return Keyboard::KEY_RIGHT_PARENTHESIS;
+        case '$': return Keyboard::KEY_DOLLAR;
+        case '&': return Keyboard::KEY_AMPERSAND;
+        case '@': return Keyboard::KEY_AT;
+        case '"': return Keyboard::KEY_QUOTE;
             
         // Numeric Symbols Row 1
-        case 0x5B:
-            return Keyboard::KEY_LEFT_BRACKET;
-        case 0x5D:
-            return Keyboard::KEY_RIGHT_BRACKET;
-        case 0x7B:
-            return Keyboard::KEY_LEFT_BRACE;
-        case 0x7D:
-            return Keyboard::KEY_RIGHT_BRACE;
-        case 0x23:
-            return Keyboard::KEY_NUMBER;
-        case 0x25:
-            return Keyboard::KEY_PERCENT;
-        case 0x5E:
-            return Keyboard::KEY_CIRCUMFLEX;
-        case 0x2A:
-            return Keyboard::KEY_ASTERISK;
-        case 0x2B:
-            return Keyboard::KEY_PLUS;
-        case 0x3D:
-            return Keyboard::KEY_EQUAL;
+        case 0x5B: return Keyboard::KEY_LEFT_BRACKET;
+        case 0x5D: return Keyboard::KEY_RIGHT_BRACKET;
+        case 0x7B: return Keyboard::KEY_LEFT_BRACE;
+        case 0x7D: return Keyboard::KEY_RIGHT_BRACE;
+        case 0x23: return Keyboard::KEY_NUMBER;
+        case '%': return Keyboard::KEY_PERCENT;
+        case 0x5E: return Keyboard::KEY_CIRCUMFLEX;
+        case '*': return Keyboard::KEY_ASTERISK;
+        case '+': return Keyboard::KEY_PLUS;
+        case '=': return Keyboard::KEY_EQUAL;
             
         // Numeric Symbols Row 2
-        case 0x5F:
-            return Keyboard::KEY_UNDERSCORE;
-        case 0x5C:
-            return Keyboard::KEY_BACK_SLASH;
-        case 0x7C:
-            return Keyboard::KEY_BAR;
-        case 0x7E:
-            return Keyboard::KEY_TILDE;
-        case 0x3C:
-            return Keyboard::KEY_LESS_THAN;
-        case 0x3E:
-            return Keyboard::KEY_GREATER_THAN;
-        case 0x80:
-            return Keyboard::KEY_EURO;
-        case 0xA3:
-            return Keyboard::KEY_POUND;
-        case 0xA5:
-            return Keyboard::KEY_YEN;
-        case 0xB7:
-            return Keyboard::KEY_MIDDLE_DOT;
+        case '_': return Keyboard::KEY_UNDERSCORE;
+        case '\\': return Keyboard::KEY_BACK_SLASH;
+        case 0x7C: return Keyboard::KEY_BAR;
+        case '~': return Keyboard::KEY_TILDE;
+        case 0x3C: return Keyboard::KEY_LESS_THAN;
+        case 0x3E: return Keyboard::KEY_GREATER_THAN;
+        case 0x80: return Keyboard::KEY_EURO;
+        case 0xA3: return Keyboard::KEY_POUND;
+        case 0xA5: return Keyboard::KEY_YEN;
+        case 0xB7: return Keyboard::KEY_MIDDLE_DOT;
     }
     return Keyboard::KEY_NONE;
 }
 
-/**
- * Returns the unicode value for the given keycode or zero if the key is not a valid printable character.
- */
-static int getUnicode(int keycode, int metastate)
+static Platform *self;
+static Game *self_game;
+
+// GLUT only gives keyboard events, without noting whether it is key up or
+// down. We store some state here to try to simulate the release events. Define
+// keys as being released if we haven't had any events for 1/5 second.
+
+
+static double __lastKeyPressTime = 0;
+unsigned char __lastKeyCode = 0;
+
+extern "C" void keyboardCB(unsigned char key, int x, int y)
 {
-    // TODO: Doesn't support unicode currently.
-    Keyboard::Key key = getKey(keycode, metastate);
-    switch (key)
+    Keyboard::Key gpkey = getKey(key);
+    if(__lastKeyCode && key != __lastKeyCode)
     {
-    case Keyboard::KEY_BACKSPACE:
-        return 0x0008;
-    case Keyboard::KEY_TAB:
-        return 0x0009;
-    case Keyboard::KEY_RETURN:
-    case Keyboard::KEY_KP_ENTER:
-        return 0x000A;
-    case Keyboard::KEY_ESCAPE:
-        return 0x001B;
-    case Keyboard::KEY_SPACE:
-    case Keyboard::KEY_EXCLAM:
-    case Keyboard::KEY_QUOTE:
-    case Keyboard::KEY_NUMBER:
-    case Keyboard::KEY_DOLLAR:
-    case Keyboard::KEY_PERCENT:
-    case Keyboard::KEY_CIRCUMFLEX:
-    case Keyboard::KEY_AMPERSAND:
-    case Keyboard::KEY_APOSTROPHE:
-    case Keyboard::KEY_LEFT_PARENTHESIS:
-    case Keyboard::KEY_RIGHT_PARENTHESIS:
-    case Keyboard::KEY_ASTERISK:
-    case Keyboard::KEY_PLUS:
-    case Keyboard::KEY_COMMA:
-    case Keyboard::KEY_MINUS:
-    case Keyboard::KEY_PERIOD:
-    case Keyboard::KEY_SLASH:
-    case Keyboard::KEY_ZERO:
-    case Keyboard::KEY_ONE:
-    case Keyboard::KEY_TWO:
-    case Keyboard::KEY_THREE:
-    case Keyboard::KEY_FOUR:
-    case Keyboard::KEY_FIVE:
-    case Keyboard::KEY_SIX:
-    case Keyboard::KEY_SEVEN:
-    case Keyboard::KEY_EIGHT:
-    case Keyboard::KEY_NINE:
-    case Keyboard::KEY_COLON:
-    case Keyboard::KEY_SEMICOLON:
-    case Keyboard::KEY_LESS_THAN:
-    case Keyboard::KEY_EQUAL:
-    case Keyboard::KEY_GREATER_THAN:
-    case Keyboard::KEY_QUESTION:
-    case Keyboard::KEY_AT:
-    case Keyboard::KEY_CAPITAL_A:
-    case Keyboard::KEY_CAPITAL_B:
-    case Keyboard::KEY_CAPITAL_C:
-    case Keyboard::KEY_CAPITAL_D:
-    case Keyboard::KEY_CAPITAL_E:
-    case Keyboard::KEY_CAPITAL_F:
-    case Keyboard::KEY_CAPITAL_G:
-    case Keyboard::KEY_CAPITAL_H:
-    case Keyboard::KEY_CAPITAL_I:
-    case Keyboard::KEY_CAPITAL_J:
-    case Keyboard::KEY_CAPITAL_K:
-    case Keyboard::KEY_CAPITAL_L:
-    case Keyboard::KEY_CAPITAL_M:
-    case Keyboard::KEY_CAPITAL_N:
-    case Keyboard::KEY_CAPITAL_O:
-    case Keyboard::KEY_CAPITAL_P:
-    case Keyboard::KEY_CAPITAL_Q:
-    case Keyboard::KEY_CAPITAL_R:
-    case Keyboard::KEY_CAPITAL_S:
-    case Keyboard::KEY_CAPITAL_T:
-    case Keyboard::KEY_CAPITAL_U:
-    case Keyboard::KEY_CAPITAL_V:
-    case Keyboard::KEY_CAPITAL_W:
-    case Keyboard::KEY_CAPITAL_X:
-    case Keyboard::KEY_CAPITAL_Y:
-    case Keyboard::KEY_CAPITAL_Z:
-    case Keyboard::KEY_LEFT_BRACKET:
-    case Keyboard::KEY_BACK_SLASH:
-    case Keyboard::KEY_RIGHT_BRACKET:
-    case Keyboard::KEY_UNDERSCORE:
-    case Keyboard::KEY_GRAVE:
-    case Keyboard::KEY_A:
-    case Keyboard::KEY_B:
-    case Keyboard::KEY_C:
-    case Keyboard::KEY_D:
-    case Keyboard::KEY_E:
-    case Keyboard::KEY_F:
-    case Keyboard::KEY_G:
-    case Keyboard::KEY_H:
-    case Keyboard::KEY_I:
-    case Keyboard::KEY_J:
-    case Keyboard::KEY_K:
-    case Keyboard::KEY_L:
-    case Keyboard::KEY_M:
-    case Keyboard::KEY_N:
-    case Keyboard::KEY_O:
-    case Keyboard::KEY_P:
-    case Keyboard::KEY_Q:
-    case Keyboard::KEY_R:
-    case Keyboard::KEY_S:
-    case Keyboard::KEY_T:
-    case Keyboard::KEY_U:
-    case Keyboard::KEY_V:
-    case Keyboard::KEY_W:
-    case Keyboard::KEY_X:
-    case Keyboard::KEY_Y:
-    case Keyboard::KEY_Z:
-    case Keyboard::KEY_LEFT_BRACE:
-    case Keyboard::KEY_BAR:
-    case Keyboard::KEY_RIGHT_BRACE:
-    case Keyboard::KEY_TILDE:
-        return key;
-    default:
-        return 0;
+        gameplay::Platform::keyEventInternal(gameplay::Keyboard::KEY_RELEASE, gpkey);
     }
+    __lastKeyCode = key;
+
+    struct timeval t;
+    gettimeofday(&t, NULL);
+    __lastKeyPressTime = timeval2millis(&t);
+
+    gameplay::Platform::keyEventInternal(gameplay::Keyboard::KEY_PRESS, gpkey);
 }
 
 Platform::Platform(Game* game)
@@ -763,13 +575,23 @@ Platform* Platform::create(Game* game, void* attachToWindow)
     return platform;
 }
 
-static Platform *self;
-static Game *self_game;
 
 extern "C" void main_loop_iter(void)
 {
-    // WebGL swaps buffers each time control is returned to the UI thread. No
-    // need to explicitly swap.
+    if(__lastKeyCode)
+    {
+        struct timeval t;
+        gettimeofday(&t, NULL);
+        double curTime = timeval2millis(&t);
+
+        if(curTime - __lastKeyPressTime > 200)
+        {
+            Keyboard::Key gpkey = getKey(__lastKeyCode);
+            gameplay::Platform::keyEventInternal(gameplay::Keyboard::KEY_RELEASE, gpkey);
+            __lastKeyCode = 0;
+        }
+    }
+
     self_game->frame();
 }
 
