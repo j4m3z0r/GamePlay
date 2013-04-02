@@ -21,7 +21,6 @@ AudioController::~AudioController()
 
 void AudioController::initialize()
 {
-#ifndef EMSCRIPTEN
     _alcDevice = alcOpenDevice(NULL);
     if (!_alcDevice)
     {
@@ -31,7 +30,15 @@ void AudioController::initialize()
     
     _alcContext = alcCreateContext(_alcDevice, NULL);
     ALCenum alcErr = alcGetError(_alcDevice);
+#ifdef EMSCRIPTEN
+    // Emscripten's OpenAL implementation requires a current context to be set
+    // in order for alcGetError to work. Since at this point we haven't yet set
+    // it to be current, we get an error here. Just rely on the context being
+    // created as our signal that it succeeded.
+    if (!_alcContext)
+#else
     if (!_alcContext || alcErr != ALC_NO_ERROR)
+#endif // EMSCRIPTEN
     {
         alcCloseDevice(_alcDevice);
         GP_ERROR("Unable to create OpenAL context. Error: %d\n", alcErr);
@@ -44,12 +51,10 @@ void AudioController::initialize()
     {
         GP_ERROR("Unable to make OpenAL context current. Error: %d\n", alcErr);
     }
-#endif // EMSCRIPTEN
 }
 
 void AudioController::finalize()
 {
-#ifndef EMSCRIPTEN
     alcMakeContextCurrent(NULL);
     if (_alcContext)
     {
@@ -61,12 +66,10 @@ void AudioController::finalize()
         alcCloseDevice(_alcDevice);
         _alcDevice = NULL;
     }
-#endif // EMSCRIPTEN
 }
 
 void AudioController::pause()
 {
-#ifndef EMSCRIPTEN
     std::set<AudioSource*>::iterator itr = _playingSources.begin();
 
     // For each source that is playing, pause it.
@@ -80,12 +83,10 @@ void AudioController::pause()
         _pausingSource = NULL;
         itr++;
     }
-#endif // EMSCRIPTEN
 }
 
 void AudioController::resume()
 {   
-#ifndef EMSCRIPTEN
     alcMakeContextCurrent(_alcContext);
 
     std::set<AudioSource*>::iterator itr = _playingSources.begin();
@@ -99,21 +100,21 @@ void AudioController::resume()
         source->resume();
         itr++;
     }
-#endif // EMSCRIPTEN
 }
 
 void AudioController::update(float elapsedTime)
 {
-#ifndef EMSCRIPTEN
     AudioListener* listener = AudioListener::getInstance();
     if (listener)
     {
+#ifndef EMSCRIPTEN
+#warning Emscripten OpenAL does not implement alListenerf yet
         AL_CHECK( alListenerf(AL_GAIN, listener->getGain()) );
         AL_CHECK( alListenerfv(AL_ORIENTATION, (ALfloat*)listener->getOrientation()) );
         AL_CHECK( alListenerfv(AL_VELOCITY, (ALfloat*)&listener->getVelocity()) );
         AL_CHECK( alListenerfv(AL_POSITION, (ALfloat*)&listener->getPosition()) );
-    }
 #endif // EMSCRIPTEN
+    }
 }
 
 }
