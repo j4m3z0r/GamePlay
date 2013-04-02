@@ -1,3 +1,6 @@
+// Note, if NOAUDIO is defined, this class will still return a valid object,
+// but it will be "neutered" -- OpenAL calls and file loading code disabled.
+
 #include "Base.h"
 #include "AudioBuffer.h"
 #include "FileSystem.h"
@@ -56,17 +59,18 @@ AudioBuffer::~AudioBuffer()
         }
     }
 
+#ifndef NOAUDIO
     if (_alBuffer)
     {
         AL_CHECK( alDeleteBuffers(1, &_alBuffer) );
         _alBuffer = 0;
     }
+#endif // NOAUDIO
 }
 
 AudioBuffer* AudioBuffer::create(const char* path)
 {
     GP_ASSERT(path);
-
     // Search the cache for a stream from this file.
     unsigned int bufferCount = (unsigned int)__buffers.size();
     AudioBuffer* buffer = NULL;
@@ -83,6 +87,7 @@ AudioBuffer* AudioBuffer::create(const char* path)
 
     ALuint alBuffer;
 
+#ifndef NOAUDIO
     // Load audio data into a buffer.
     AL_CHECK( alGenBuffers(1, &alBuffer) );
     if (AL_LAST_ERROR())
@@ -119,9 +124,9 @@ AudioBuffer* AudioBuffer::create(const char* path)
     }
     else if (memcmp(header, "OggS", 4) == 0)
     {
-#ifdef EMSCRIPTEN
+# ifdef EMSCRIPTEN
         GP_ERROR("Emscripten built GamePlay cannot open .ogg files. Convert to .wav (%s)", path);
-#endif // EMSCRIPTEN
+# endif // EMSCRIPTEN
         if (!AudioBuffer::loadOgg(stream.get(), alBuffer))
         {
             GP_ERROR("Invalid ogg file: %s", path);
@@ -133,7 +138,7 @@ AudioBuffer* AudioBuffer::create(const char* path)
         GP_ERROR("Unsupported audio file: %s", path);
         goto cleanup;
     }
-
+#endif // NOAUDIO
     buffer = new AudioBuffer(path, alBuffer);
 
     // Add the buffer to the cache.
@@ -149,6 +154,9 @@ cleanup:
 
 bool AudioBuffer::loadWav(Stream* stream, ALuint buffer)
 {
+#ifdef NOAUDIO
+    return true;
+#else
     GP_ASSERT(stream);
 
     unsigned char data[12];
@@ -330,10 +338,14 @@ bool AudioBuffer::loadWav(Stream* stream, ALuint buffer)
             }
         }
     }
+#endif // NOAUDIO
 }
 
 bool AudioBuffer::loadOgg(Stream* stream, ALuint buffer)
 {
+#ifdef NOAUDIO
+    return true;
+#else
     GP_ASSERT(stream);
 
     OggVorbis_File ogg_file;
@@ -400,6 +412,7 @@ bool AudioBuffer::loadOgg(Stream* stream, ALuint buffer)
     ov_clear(&ogg_file);
 
     return true;
+#endif // NOAUDIO
 }
 
 }

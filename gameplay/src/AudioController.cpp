@@ -1,5 +1,4 @@
-// Note, this class is just stubbed out for Emscripten as it does not yet
-// provide an OpenAL implementation.
+// Note, this class will just be stubbed out if NOAUDIO is #defined.
 
 #include "Base.h"
 #include "AudioController.h"
@@ -21,6 +20,7 @@ AudioController::~AudioController()
 
 void AudioController::initialize()
 {
+#ifndef NOAUDIO
     _alcDevice = alcOpenDevice(NULL);
     if (!_alcDevice)
     {
@@ -30,15 +30,15 @@ void AudioController::initialize()
     
     _alcContext = alcCreateContext(_alcDevice, NULL);
     ALCenum alcErr = alcGetError(_alcDevice);
-#ifdef EMSCRIPTEN
+# ifdef EMSCRIPTEN
     // Emscripten's OpenAL implementation requires a current context to be set
     // in order for alcGetError to work. Since at this point we haven't yet set
     // it to be current, we get an error here. Just rely on the context being
     // created as our signal that it succeeded.
     if (!_alcContext)
-#else
+# else
     if (!_alcContext || alcErr != ALC_NO_ERROR)
-#endif // EMSCRIPTEN
+# endif // EMSCRIPTEN
     {
         alcCloseDevice(_alcDevice);
         GP_ERROR("Unable to create OpenAL context. Error: %d\n", alcErr);
@@ -51,10 +51,12 @@ void AudioController::initialize()
     {
         GP_ERROR("Unable to make OpenAL context current. Error: %d\n", alcErr);
     }
+#endif // NOAUDIO
 }
 
 void AudioController::finalize()
 {
+#ifndef NOAUDIO
     alcMakeContextCurrent(NULL);
     if (_alcContext)
     {
@@ -66,10 +68,12 @@ void AudioController::finalize()
         alcCloseDevice(_alcDevice);
         _alcDevice = NULL;
     }
+#endif // NOAUDIO
 }
 
 void AudioController::pause()
 {
+#ifndef NOAUDIO
     std::set<AudioSource*>::iterator itr = _playingSources.begin();
 
     // For each source that is playing, pause it.
@@ -83,10 +87,12 @@ void AudioController::pause()
         _pausingSource = NULL;
         itr++;
     }
+#endif // NOAUDIO
 }
 
 void AudioController::resume()
 {   
+#ifndef NOAUDIO
     alcMakeContextCurrent(_alcContext);
 
     std::set<AudioSource*>::iterator itr = _playingSources.begin();
@@ -100,10 +106,12 @@ void AudioController::resume()
         source->resume();
         itr++;
     }
+#endif // NOAUDIO
 }
 
 void AudioController::update(float elapsedTime)
 {
+#ifndef NOAUDIO
     AudioListener* listener = AudioListener::getInstance();
     if (listener)
     {
@@ -115,6 +123,7 @@ void AudioController::update(float elapsedTime)
         AL_CHECK( alListenerfv(AL_POSITION, (ALfloat*)&listener->getPosition()) );
 #endif // EMSCRIPTEN
     }
+#endif // NOAUDIO
 }
 
 }
