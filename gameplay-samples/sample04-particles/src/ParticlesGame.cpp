@@ -23,7 +23,7 @@ ParticlesGame::ParticlesGame() : _scene(NULL)
 void ParticlesGame::initialize()
 {
     // Display the gameplay splash screen for at least 1 second.
-    displayScreen(this, &ParticlesGame::drawSplash, NULL, 1000L);
+    //displayScreen(this, &ParticlesGame::drawSplash, NULL, 1000L);
 
     setMultiTouch(true);
 
@@ -160,7 +160,7 @@ void ParticlesGame::initialize()
     _axisVarZ->addListener(this, Listener::VALUE_CHANGED);
     _rotationSpeedMin->addListener(this, Listener::VALUE_CHANGED);
     _rotationSpeedMax->addListener(this, Listener::VALUE_CHANGED);
-    
+
     // Apply default emitter values to the UI.
     emitterChanged();
 }
@@ -459,6 +459,7 @@ void ParticlesGame::controlEvent(Control* control, EventType evt)
             _sDown = false;
         }
         break;
+    default: break;
     }
 }
 
@@ -505,10 +506,8 @@ void ParticlesGame::update(float elapsedTime)
         v.scale(INPUT_SENSITIVITY * elapsedTime);
         _scene->getActiveCamera()->getNode()->translate(v);
     }
-
     // Update particles.
     _particleEmitterNode->getParticleEmitter()->update(elapsedTime);
-    
     // Update UI.
     _form->update(elapsedTime);
 }
@@ -518,11 +517,11 @@ void ParticlesGame::render(float elapsedTime)
     // Clear the color and depth buffers.
     clear(CLEAR_COLOR_DEPTH, BACKGROUND_COLOR, 1.0f, 0);
 
-    // Draw the UI.
-    _form->draw();
-
     // Visit all the nodes in the scene for drawing.
     _scene->visit(this, &ParticlesGame::drawScene, (void*)0);
+
+    // Draw the UI.
+    _form->draw();
 
     // Draw the framerate and number of live particles.
     drawFrameRate(_font, Vector4(0, 0.5f, 1, 1), 170, 10, getFrameRate());
@@ -627,6 +626,7 @@ void ParticlesGame::keyEvent(Keyboard::KeyEvent evt, int key)
             break;
         }
         break;
+    default: break;
     }
 }
 
