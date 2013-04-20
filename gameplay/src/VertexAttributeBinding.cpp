@@ -279,7 +279,6 @@ void VertexAttributeBinding::bind()
             if (a.enabled)
             {
 #ifdef EMSCRIPTEN
-
                 int offset = ((char*)a.pointer) - ((char*) a0.pointer);
 
                 // XXX: This is almost certainly wrong, however for the time
@@ -291,7 +290,11 @@ void VertexAttributeBinding::bind()
                 // XXX: Seems to be the 'track' texture on the racer demo that
                 // trips this up, which is a "light map texture". Suspect the
                 // issue may be there.
-                if(offset < 0) offset = 0;
+                if(offset < 0)
+                {
+                    printf("Invalid vertex attribute binding offset %d. Resetting to %d\n", offset, offset + a.stride);
+                    offset += a.stride;
+                }
 
                 GL_ASSERT( glVertexAttribPointer(i, a.size, a.type, a.normalized, a.stride, (const GLvoid *) offset) );
 
