@@ -3,7 +3,7 @@
 #EMCC_FLAGS:=-O0 -D_DEBUG --jcache -s GL_DEBUG=1 -s GL_UNSAFE_OPTS=0
 #EMCC_FLAGS:=-O0 -D_DEBUG --jcache -s GL_UNSAFE_OPTS=0
 #EMCC_FLAGS:=-O0 --jcache -s GL_UNSAFE_OPTS=0
-EMCC_FLAGS:=-O1 --jcache -s GL_UNSAFE_OPTS=0
+EMCC_FLAGS:=-O1 --jcache -s GL_UNSAFE_OPTS=0 -DNOAUDIO
 
 EMCC:=emscripten/emcc
 
