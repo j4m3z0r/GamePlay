@@ -38,6 +38,7 @@ RacerGame::RacerGame()
 
 void RacerGame::initialize()
 {
+    printf("Running RacerGame::initialize()\n");
     //setVsync(false);
 
     setMultiTouch(true);
@@ -83,12 +84,14 @@ void RacerGame::initialize()
         _carVehicle = static_cast<PhysicsVehicle*>(carNode->getCollisionObject());
         resetToStart();
     }
+
+#ifndef NOAUDIO
     // Create audio tracks
-#ifdef EMSCRIPTEN
+# ifdef EMSCRIPTEN
     _backgroundSound = AudioSource::create("res/common/background_track.wav");
-#else
+# else
     _backgroundSound = AudioSource::create("res/common/background_track.ogg");
-#endif // EMSCRIPTEN
+# endif // EMSCRIPTEN
     if (_backgroundSound)
     {
         _backgroundSound->setLooped(true);
@@ -96,11 +99,11 @@ void RacerGame::initialize()
         _backgroundSound->setGain(0.3f);
     }
 
-#ifdef EMSCRIPTEN
+# ifdef EMSCRIPTEN
     _engineSound = AudioSource::create("res/common/engine_loop.wav");
-#else
+# else
     _engineSound = AudioSource::create("res/common/engine_loop.ogg");
-#endif // EMSCRIPTEN
+# endif // EMSCRIPTEN
     if (_engineSound)
     {
         _engineSound->setLooped(true);
@@ -111,6 +114,7 @@ void RacerGame::initialize()
     _brakingSound = AudioSource::create("res/common/braking.wav");
     _brakingSound->setLooped(false);
     _brakingSound->setGain(0.5f);
+#endif // NOAUDIO
 
     _gamepad = getGamepad(0);
 }
@@ -136,9 +140,11 @@ bool RacerGame::initializeScene(Node* node)
 
 void RacerGame::finalize()
 {
+#ifndef NOAUDIO
     SAFE_RELEASE(_backgroundSound);
     SAFE_RELEASE(_engineSound);
     SAFE_RELEASE(_brakingSound);
+#endif // NOAUDIO
     SAFE_RELEASE(_scene);
     SAFE_RELEASE(_font);
     SAFE_RELEASE(_menu);
@@ -225,17 +231,23 @@ void RacerGame::update(float elapsedTime)
                 if (_gamepad->getTriggerCount() > 1)
                 {
                     driving = _gamepad->getTriggerValue(1);
+#ifndef NOAUDIO
                     _engineSound->setGain(0.8f + (driving * 0.2f));
+#endif // NOAUDIO
                 }
                 
                 if (!driving && (_keyFlags & ACCELERATOR || _keyFlags & ACCELERATOR_MOUSE || _gamepad->isButtonDown(Gamepad::BUTTON_A)))
                 {
                     driving = 1;
+#ifndef NOAUDIO
                     _engineSound->setGain(1.0f);
+#endif // NOAUDIO
                 }
                 else
                 {
+#ifndef NOAUDIO
                     _engineSound->setGain(0.8f);
+#endif // NOAUDIO
                 }
                 float s = _carVehicle->getSpeedSmoothKph() / 100.0f;
                 _engineSound->setPitch(max(0.2f, min(s, 2.0f)));
@@ -251,12 +263,16 @@ void RacerGame::update(float elapsedTime)
                 if ( (_keyFlags & BRAKE) || (_keyFlags & BRAKE_MOUSE) || _gamepad->isButtonDown(Gamepad::BUTTON_B))
                 {
                     braking = 1;
+#ifndef NOAUDIO
                     if (_brakingSound && (_brakingSound->getState() != AudioSource::PLAYING) && (v > 30.0f))
                         _brakingSound->play();
+#endif // NOAUDIO
                 }
                 else
                 {
+#ifndef NOAUDIO
                     _brakingSound->stop();
+#endif // NOAUDIO
                 }
 
                 // Make the camera follow the car
