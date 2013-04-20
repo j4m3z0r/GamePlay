@@ -2,7 +2,7 @@
 #EMCC_FLAGS:=-O0 -D_DEBUG --jcache -s GL_DEBUG=1 -s GL_UNSAFE_OPTS=0
 #EMCC_FLAGS:=-O0 -D_DEBUG --jcache -s GL_UNSAFE_OPTS=0
 #EMCC_FLAGS:=-O0 --jcache -s GL_UNSAFE_OPTS=0
-EMCC_FLAGS:=-O1 --jcache -s GL_UNSAFE_OPTS=0
+EMCC_FLAGS:=-O1 --jcache -s GL_UNSAFE_OPTS=0 -DNOAUDIO
 
 EMCC:=externals/emscripten/emcc
 
@@ -17,11 +17,11 @@ INTERMEDIATE_OBJECTS := \
 	externals/liblua.bc \
 	externals/libz.bc \
 	externals/libpng.bc \
-	externals/libvorbis.bc \
 	gameplay/libgameplay.bc \
 	gameplay/libgphacked.bc
 
 #	externals/libfakeal.bc \
+#	externals/libvorbis.bc \
 
 externals/libbullet.bc:
 	make -C externals -f EMMakefile libbullet.bc -j 4
@@ -88,13 +88,147 @@ gameplay-samples/sample04-particles/dist/index.html: $(INTERMEDIATE_OBJECTS) gam
 	# Hack to set the canvas to the appropriate size.
 	perl -i -pe 's/id="canvas"/width="800" height="600" id="canvas"/' gameplay-samples/sample04-particles/dist/index.html
 
-# Racer demo
+# Racer Demo
 gameplay-samples/sample06-racer/dist/index.data:
 	(cd gameplay-samples/sample06-racer; \
-	cp game.png.config game.config; \
+	cp game.dxt.config game.config; \
     mkdir -p dist; \
-    python ../../externals/emscripten/tools/file_packager.py index.data --preload game.config --preload res --pre-run > dist/preload.js; \
+    python ../../externals/emscripten/tools/file_packager.py index.data \
+		--preload game.config \
+		--preload res/atc/car.png \
+		--preload res/atc/chain_fence_1.dds \
+		--preload res/atc/d_tree.dds \
+		--preload res/atc/design_11.dds \
+		--preload res/atc/gamepad.dds \
+		--preload res/atc/grassbunch_1.dds \
+		--preload res/atc/grassbunch_2.dds \
+		--preload res/atc/gravel_2.dds \
+		--preload res/atc/panel_1.dds \
+		--preload res/atc/panel_10.dds \
+		--preload res/atc/panel_11.dds \
+		--preload res/atc/panel_12.dds \
+		--preload res/atc/panel_13.dds \
+		--preload res/atc/panel_14.dds \
+		--preload res/atc/panel_15.dds \
+		--preload res/atc/panel_16.dds \
+		--preload res/atc/panel_2.dds \
+		--preload res/atc/panel_3.dds \
+		--preload res/atc/panel_4.dds \
+		--preload res/atc/panel_5.dds \
+		--preload res/atc/panel_6.dds \
+		--preload res/atc/panel_7.dds \
+		--preload res/atc/panel_8.dds \
+		--preload res/atc/panel_9.dds \
+		--preload res/atc/panorama_2.dds \
+		--preload res/atc/panorama_3.dds \
+		--preload res/atc/rails.dds \
+		--preload res/atc/shrub_1.dds \
+		--preload res/atc/shrub_2.dds \
+		--preload res/atc/shrub_3.dds \
+		--preload res/atc/textures_8.dds \
+		--preload res/atc/track_1.dds \
+		--preload res/atc/tree.dds \
+		--preload res/atc/tree_2.dds \
+		--preload res/atc/tree_3.dds \
+		--preload res/atc/tree_4.dds \
+		--preload res/atc/tree_5.dds \
+		--preload res/atc/tree_6.dds \
+		--preload res/atc/tree_7.dds \
+		--preload res/atc/trunk_1.dds \
+		--preload res/atc/trunk_2.dds \
+		--preload res/common/arial40.gpb \
+		--preload res/common/game.gpb \
+		--preload res/common/game.lua \
+		--preload res/common/game.material \
+		--preload res/common/game.physics \
+		--preload res/common/game.scene \
+		--preload res/common/gamepad.form \
+		--preload res/common/gamepad.theme \
+		--preload res/common/heightmap_combinedmap_0.png \
+		--preload res/common/menu.form \
+		--preload res/common/menu.png \
+		--preload res/common/menu.theme \
+		--preload res/common/overlay.form \
+		--preload res/dxt/car.png \
+		--preload res/dxt/car_body.dds \
+		--preload res/dxt/car_wheels.dds \
+		--preload res/dxt/chain_fence_1.dds \
+		--preload res/dxt/d_tree.dds \
+		--preload res/dxt/design_11.dds \
+		--preload res/dxt/gamepad.dds \
+		--preload res/dxt/grassbunch_1.dds \
+		--preload res/dxt/grassbunch_2.dds \
+		--preload res/dxt/gravel_2.dds \
+		--preload res/dxt/panel_1.dds \
+		--preload res/dxt/panel_10.dds \
+		--preload res/dxt/panel_11.dds \
+		--preload res/dxt/panel_12.dds \
+		--preload res/dxt/panel_13.dds \
+		--preload res/dxt/panel_14.dds \
+		--preload res/dxt/panel_15.dds \
+		--preload res/dxt/panel_16.dds \
+		--preload res/dxt/panel_2.dds \
+		--preload res/dxt/panel_3.dds \
+		--preload res/dxt/panel_4.dds \
+		--preload res/dxt/panel_5.dds \
+		--preload res/dxt/panel_6.dds \
+		--preload res/dxt/panel_7.dds \
+		--preload res/dxt/panel_8.dds \
+		--preload res/dxt/panel_9.dds \
+		--preload res/dxt/panorama_2.dds \
+		--preload res/dxt/panorama_3.dds \
+		--preload res/dxt/rails.dds \
+		--preload res/dxt/shrub_1.dds \
+		--preload res/dxt/shrub_2.dds \
+		--preload res/dxt/shrub_3.dds \
+		--preload res/dxt/textures_8.dds \
+		--preload res/dxt/track_1.dds \
+		--preload res/dxt/tree.dds \
+		--preload res/dxt/tree_2.dds \
+		--preload res/dxt/tree_3.dds \
+		--preload res/dxt/tree_4.dds \
+		--preload res/dxt/tree_5.dds \
+		--preload res/dxt/tree_6.dds \
+		--preload res/dxt/tree_7.dds \
+		--preload res/dxt/trunk_1.dds \
+		--preload res/dxt/trunk_2.dds \
+		--preload res/logo_powered_white.png \
+		--preload res/shaders/colored-unlit.frag \
+		--preload res/shaders/colored-unlit.vert \
+		--preload res/shaders/colored.frag \
+		--preload res/shaders/colored.vert \
+		--preload res/shaders/font.frag \
+		--preload res/shaders/font.vert \
+		--preload res/shaders/form.frag \
+		--preload res/shaders/form.vert \
+		--preload res/shaders/lighting-directional.frag \
+		--preload res/shaders/lighting-directional.vert \
+		--preload res/shaders/lighting-point.frag \
+		--preload res/shaders/lighting-point.vert \
+		--preload res/shaders/lighting-spot.frag \
+		--preload res/shaders/lighting-spot.vert \
+		--preload res/shaders/lighting.frag \
+		--preload res/shaders/skinning-none.vert \
+		--preload res/shaders/skinning.vert \
+		--preload res/shaders/sprite.frag \
+		--preload res/shaders/sprite.vert \
+		--preload res/shaders/terrain.frag \
+		--preload res/shaders/terrain.vert \
+		--preload res/shaders/textured-bumped.frag \
+		--preload res/shaders/textured-bumped.vert \
+		--preload res/shaders/textured-unlit.frag \
+		--preload res/shaders/textured-unlit.vert \
+		--preload res/shaders/textured.frag \
+		--preload res/shaders/textured.vert \
+		--pre-run > dist/preload.js; \
     mv index.data dist)
+
+# sounds:
+#		--preload res/common/background_track.ogg \
+		--preload res/common/background_track.wav \
+		--preload res/common/braking.wav \
+		--preload res/common/engine_loop.ogg \
+		--preload res/common/engine_loop.wav
 
 gameplay-samples/sample06-racer/dist/index.html: $(INTERMEDIATE_OBJECTS) gameplay-samples/sample06-racer/src/RacerGame.cpp gameplay-samples/sample06-racer/dist/index.data
 	mkdir -p gameplay-samples/sample06-racer/dist
